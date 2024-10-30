@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tab Tree Tracker Options</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    textarea { width: 100%; height: 200px; }
+    select { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Tab Tree Tracker Options</h1>
+  <h2>Excluded Domains</h2>
+  <p>Enter one domain per line. Tabs from these domains will not be tracked.</p>
+  <textarea id="excludedDomains"></textarea>
+  <h2>Time Zone</h2>
+  <select id="timeZone"></select>
+  <br><br>
+  <button id="save">Save</button>
+  <div id="status"></div>
+  <script src="options.js"></script>
+</body>
+</html>

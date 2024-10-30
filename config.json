@@ -1,0 +1,9 @@
+{
+  "excludedDomains": [
+    "mendeley.com",
+    "google.com",
+    "chrome://",
+    "chrome-extension://",
+    "chrome://newtab/"
+  ]
+}

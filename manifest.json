@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "Tab Tree Tracker",
+  "version": "1.0",
+  "description": "Tracks browser history in a tree structure",
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "storage",
+    "webNavigation",
+    "scripting",
+    "alarms",
+    "fileSystem"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/inactive_16.png",
+      "32": "icons/inactive_32.png",
+      "48": "icons/inactive_48.png",
+      "128": "icons/inactive_128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/inactive_16.png",
+    "32": "icons/inactive_32.png",
+    "48": "icons/inactive_48.png",
+    "128": "icons/inactive_128.png"
+  },
+  "web_accessible_resources": [{
+    "resources": [
+      "viewer/*",
+      "viewer/components/*",
+      "libs/*"
+    ],
+    "matches": ["<all_urls>"]
+  }]
+}
