@@ -7,6 +7,7 @@ export class TreeVisualizer {
       nodeSize: 20,
       maxLineLength: 20,
       maxLines: 2,
+      showText: true,
       ...options
     };
     
@@ -62,7 +63,7 @@ export class TreeVisualizer {
     this.render();
   }
 
-  
+
   // Add text wrapping utility method to TreeVisualizer class
   wrapLongText(text, maxLength = 40, maxLines = 3) {
     if (!text) return '';
@@ -352,13 +353,22 @@ export class TreeVisualizer {
     });
   }
 
+  
+  // Add new method to toggle text visibility
+  toggleTextVisibility() {
+    this.options.showText = !this.options.showText;
+    this.nodesGroup.selectAll('.text-group')
+      .style('display', this.options.showText ? 'block' : 'none');
+  }
+  
   // Updated updateNodeText method with constant text size
   updateNodeText(node, d) {
     const scale = this.zoomLevel || 1;
     const baseOffset = 8; // Base offset distance from node
     const scaledOffset = baseOffset / scale; // Scale offset with zoom level
     
-    const textGroup = node.select('.text-group');
+    const textGroup = node.select('.text-group')
+      .style('display', this.options.showText ? 'block' : 'none');  // Add this line
     const background = textGroup.select('.text-background');
     const foreground = textGroup.select('.text-foreground');
     

@@ -5,6 +5,10 @@ export class ViewerControls {
   }
 
   setupEventListeners() {
+    // Add to existing event listeners
+    document.getElementById('toggleText')?.addEventListener('click', () => {
+      this.viewer.treeVisualizer.toggleTextVisibility();
+    });
     // Toggle layout button
     document.getElementById('toggleLayout')?.addEventListener('click', () => {
       this.viewer.toggleLayout();
