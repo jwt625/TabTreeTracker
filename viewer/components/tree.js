@@ -18,6 +18,7 @@ export class TreeVisualizer {
     
     // Add property for details panel
     this.detailsPanel = null;
+    this.setupKeyboardShortcuts();
 
     this.init();
 
@@ -465,4 +466,24 @@ export class TreeVisualizer {
   
     return lines;
   }
+  // In TreeVisualizer class, add this method
+  setupKeyboardShortcuts() {
+    document.addEventListener('keydown', (event) => {
+      // Skip if focus is in an input field
+      if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      // 'T' key for toggle text
+      if (event.key.toLowerCase() === 't') {
+        this.toggleTextVisibility();
+        // Update button text
+        const button = document.getElementById('toggleText');
+        if (button) {
+          button.textContent = `${this.options.showText ? 'Hide' : 'Show'} Text (T)`;
+        }
+      }
+    });
+  }
+
 }
