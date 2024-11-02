@@ -73,6 +73,14 @@ export class TreeVisualizer {
     const newSize = this.options.nodeSize + change;
     if (newSize >= this.options.minNodeSize && newSize <= this.options.maxNodeSize) {
       this.options.nodeSize = newSize;
+      
+      // Immediately update existing nodes
+      const currentScale = this.zoomLevel || 1;
+      this.nodesGroup.selectAll('circle')
+        .transition()
+        .duration(300)  // Optional: add smooth transition
+        .attr('r', this.options.nodeSize / 2 / currentScale);
+      
       this.render();
     }
   }
@@ -80,6 +88,14 @@ export class TreeVisualizer {
   // Add method to reset node size
   resetNodeSize() {
     this.options.nodeSize = 20; // Default size
+    
+    // Immediately update existing nodes
+    const currentScale = this.zoomLevel || 1;
+    this.nodesGroup.selectAll('circle')
+      .transition()
+      .duration(300)  // Optional: add smooth transition
+      .attr('r', this.options.nodeSize / 2 / currentScale);
+
     this.render();
   }
 
