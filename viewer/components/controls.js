@@ -5,9 +5,25 @@ export class ViewerControls {
   }
 
   setupEventListeners() {
-    // Add to existing event listeners
+    
+    document.getElementById('decreaseNodes')?.addEventListener('click', () => {
+      this.viewer.treeVisualizer.updateNodeSize(-this.viewer.treeVisualizer.options.nodeSizeStep);
+    });
+
+    document.getElementById('resetNodes')?.addEventListener('click', () => {
+      this.viewer.treeVisualizer.resetNodeSize();
+    });
+
+    document.getElementById('increaseNodes')?.addEventListener('click', () => {
+      this.viewer.treeVisualizer.updateNodeSize(this.viewer.treeVisualizer.options.nodeSizeStep);
+    });
+
     document.getElementById('toggleText')?.addEventListener('click', () => {
       this.viewer.treeVisualizer.toggleTextVisibility();
+      const button = document.getElementById('toggleText');
+      if (button) {
+        button.textContent = `${this.viewer.treeVisualizer.options.showText ? 'Hide' : 'Show'} Text (T)`;
+      }
     });
     // Toggle layout button
     document.getElementById('toggleLayout')?.addEventListener('click', () => {

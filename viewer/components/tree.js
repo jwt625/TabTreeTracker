@@ -5,6 +5,9 @@ export class TreeVisualizer {
     this.options = {
       layout: 'vertical',
       nodeSize: 20,
+      minNodeSize: 2,      // Add min size
+      maxNodeSize: 60,     // Add max size
+      nodeSizeStep: 2,     // Add size adjustment step
       maxLineLength: 20,
       maxLines: 2,
       showText: true,
@@ -64,6 +67,21 @@ export class TreeVisualizer {
     this.render();
   }
 
+
+  // Add method to update node size
+  updateNodeSize(change) {
+    const newSize = this.options.nodeSize + change;
+    if (newSize >= this.options.minNodeSize && newSize <= this.options.maxNodeSize) {
+      this.options.nodeSize = newSize;
+      this.render();
+    }
+  }
+
+  // Add method to reset node size
+  resetNodeSize() {
+    this.options.nodeSize = 20; // Default size
+    this.render();
+  }
 
   // Add text wrapping utility method to TreeVisualizer class
   wrapLongText(text, maxLength = 40, maxLines = 3) {
@@ -207,6 +225,7 @@ export class TreeVisualizer {
   }
 
   render(isZoomUpdate = false) {
+    console.log('Render called.')
     const isVertical = this.options.layout === 'vertical';
     const margin = { top: 50, right: 50, bottom: 50, left: 50 };
     
@@ -414,7 +433,7 @@ export class TreeVisualizer {
     const scale = transform.k;
     this.nodesGroup.selectAll('circle')
       .attr('r', this.options.nodeSize / 2 / scale)
-      .attr('stroke-width', 2 / scale);  // Scale stroke width inversely
+      .attr('stroke-width', 2 );  // Scale stroke width inversely
     
     // Update text positions and scaling
     this.nodesGroup.selectAll('.node').each((d, i, nodes) => {
@@ -474,14 +493,27 @@ export class TreeVisualizer {
         return;
       }
 
-      // 'T' key for toggle text
-      if (event.key.toLowerCase() === 't') {
-        this.toggleTextVisibility();
-        // Update button text
-        const button = document.getElementById('toggleText');
-        if (button) {
-          button.textContent = `${this.options.showText ? 'Hide' : 'Show'} Text (T)`;
-        }
+      switch(event.key.toLowerCase()) {
+        case 't':
+          this.toggleTextVisibility();
+          const button = document.getElementById('toggleText');
+          if (button) {
+            button.textContent = `${this.options.showText ? 'Hide' : 'Show'} Text (T)`;
+          }
+          break;
+        case '=': // Plus key (without shift)
+        case '+': // Plus key (with shift)
+          if (event.ctrlKey || event.metaKey) {
+            event.preventDefault();
+            this.updateNodeSize(this.options.nodeSizeStep);
+          }
+          break;
+        case '-': // Minus key
+          if (event.ctrlKey || event.metaKey) {
+            event.preventDefault();
+            this.updateNodeSize(-this.options.nodeSizeStep);
+          }
+          break;
       }
     });
   }
