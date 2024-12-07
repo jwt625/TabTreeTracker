@@ -4,6 +4,10 @@ A Chrome extension that visualizes your browser tab navigation history as an int
 
 (Mostly written by Claude.)
 
+
+![example-screenshot](TTT-example.png)
+
+
 ## Features
 
 ### Tree Visualization
