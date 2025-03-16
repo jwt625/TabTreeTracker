@@ -14,7 +14,7 @@ class TabTreeViewer {
     this.init();
   }
 
-  // Get tab ID - keep as separate async method
+
   async getTabId() {
     return new Promise((resolve) => {
       if (window.chrome && chrome.tabs) {
@@ -102,15 +102,6 @@ class TabTreeViewer {
   }
 
 
-  async getTabId() {
-    return new Promise((resolve) => {
-      if (window.chrome && chrome.tabs) {
-        chrome.tabs.getCurrent(tab => resolve(tab.id));
-      } else {
-        resolve(null);
-      }
-    });
-  }
   
   async requestData() {
     return new Promise((resolve) => {
