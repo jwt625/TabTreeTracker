@@ -266,7 +266,7 @@ const EventHandlers = {
 
   async onTabUpdated(tabId, changeInfo, tab) {
     if (!State.isTracking || State.isViewerTab(tabId) || 
-        !changeInfo.status === 'complete' || isExcluded(tab.url)) return;
+        changeInfo.status !== 'complete' || isExcluded(tab.url)) return;
     // Always update title if it has changed
     if (changeInfo.title) {
       TabManager.updateTabTitle(tab);
@@ -424,13 +424,9 @@ function handleMessages(request, sender, sendResponse) {
 
     switch (request.action) {
         case 'getTabTree':
-          const response = {
-            tabTree: State.tabTree || {}
-          };
-          console.log('Sending tabTree response:', response); // For debugging
-          sendResponse(response);
-          return false; // Changed to false since we're sending synchronously
-        
+          sendResponse({ tabTree: State.tabTree || {} });
+          return false;
+
         case 'registerViewer':
         State.registerViewerTab(request.tabId);
         sendResponse({ success: true });
@@ -452,10 +448,6 @@ function handleMessages(request, sender, sendResponse) {
       case 'getTrackingStatus':
         sendResponse({ isTracking: State.isTracking });
         return false; // Changed to false since we're sending synchronously
-  
-      case 'getTabTree':
-        sendResponse({ tabTree: State.tabTree });
-        break;
   
       case 'clearTabTree':
         State.clearState();
