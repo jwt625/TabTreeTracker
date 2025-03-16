@@ -430,30 +430,30 @@ function handleMessages(request, sender, sendResponse) {
         case 'registerViewer':
         State.registerViewerTab(request.tabId);
         sendResponse({ success: true });
-        return false; // Changed to false since we're sending synchronously
+        return false; // Synchronous response
 
         case 'unregisterViewer':
         State.unregisterViewerTab(request.tabId);
         sendResponse({ success: true });
-        return false; // Changed to false since we're sending synchronously
+        return false; // Synchronous response
 
       case 'toggleTracking':
         State.isTracking = !State.isTracking;
         updateIcon(State.isTracking);
         chrome.storage.local.set({ isTracking: State.isTracking });
-        console.log('Tracking toggled:', State.isTracking); // Add logging
+        console.log('Tracking toggled:', State.isTracking);
         sendResponse({ isTracking: State.isTracking });
         return false;
-  
+
       case 'getTrackingStatus':
         sendResponse({ isTracking: State.isTracking });
-        return false; // Changed to false since we're sending synchronously
-  
+        return false; // Synchronous response
+
       case 'clearTabTree':
         State.clearState();
         sendResponse({ success: true });
-        return false; // Changed to false since we're sending synchronously
-  
+        return false; // Synchronous response
+
       case 'updateConfig':
         chrome.storage.local.set({ config: request.config })
           .then(() => {
@@ -464,8 +464,8 @@ function handleMessages(request, sender, sendResponse) {
             console.error('Error updating config:', error);
             sendResponse({ error: error.message });
           });
-        return true; // Will respond asynchronously
-  
+        return true; // Asynchronous response
+
       case 'updateTimeZone':
         chrome.storage.local.set({ userTimeZone: request.timeZone })
           .then(() => {
@@ -476,12 +476,12 @@ function handleMessages(request, sender, sendResponse) {
             console.error('Error updating timezone:', error);
             sendResponse({ error: error.message });
           });
-        return true; // Will respond asynchronously
-  
+        return true; // Asynchronous response
+
       default:
         sendResponse({ error: 'Unknown action' });
+        return false; // Synchronous response for unknown actions
     }
-    return true; // Will respond asynchronously
   }
 
 // 
