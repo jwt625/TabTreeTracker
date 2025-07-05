@@ -4,6 +4,12 @@ A Chrome extension that visualizes browser tab navigation history as an interact
 
 ![example-screenshot](TTT-example.png)
 
+
+Cluster view:
+
+<img width="1159" alt="image" src="https://github.com/user-attachments/assets/5e50a406-78ad-4fdb-a6db-aaf8e322da87" />
+
+
 ## Features
 
 ### Dual Visualization Modes
