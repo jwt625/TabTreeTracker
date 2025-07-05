@@ -2,24 +2,127 @@
 <html>
 <head>
   <style>
-    body {
-      width: 400px;
-      padding: 10px;
-      font-family: Arial, sans-serif;
+    * {
+      box-sizing: border-box;
     }
-    
-    .control-panel {
-      margin-bottom: 15px;
-      padding: 10px;
-      background-color: #f5f5f5;
-      border-radius: 4px;
+
+    body {
+      width: 420px;
+      min-height: 500px;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      border-radius: 0 0 16px 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .logo {
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .help-button {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(26, 115, 232, 0.1);
+      border: 1px solid rgba(26, 115, 232, 0.3);
+      color: #1a73e8;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      padding: 0;
+    }
+
+    .help-button:hover {
+      background: rgba(26, 115, 232, 0.2);
+      transform: scale(1.1);
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(45deg, #1a73e8, #4285f4);
+      border-radius: 8px;
+      margin-right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .logo-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a73e8;
+    }
+
+    .control-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: rgba(26, 115, 232, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(26, 115, 232, 0.2);
+    }
+
+    .tracking-toggle {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 48px;
+      height: 24px;
+      background: #ccc;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .toggle-switch.active {
+      background: #4CAF50;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .toggle-switch.active .toggle-slider {
+      transform: translateX(24px);
     }
 
     .status {
-      margin-left: 10px;
-      font-weight: bold;
+      font-weight: 600;
+      font-size: 14px;
+      transition: color 0.3s ease;
     }
 
     .status.active {
@@ -27,32 +130,61 @@
     }
 
     .status.inactive {
-      color: #F44336;
+      color: #666;
+    }
+
+    .main-content {
+      padding: 0 20px 20px;
     }
 
     .button-group {
-      margin-top: 10px;
-      display: flex;
-      gap: 8px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
     }
 
     button {
-      padding: 8px 16px;
+      padding: 12px 16px;
       border: none;
-      border-radius: 4px;
-      background-color: #1a73e8;
-      color: white;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #1a73e8;
       cursor: pointer;
       font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
     button:hover {
-      background-color: #1557b0;
+      background: rgba(255, 255, 255, 1);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(26, 115, 232, 0.2);
+    }
+
+    button:active {
+      transform: translateY(0);
     }
 
     button:disabled {
-      background-color: #ccc;
+      background: rgba(255, 255, 255, 0.5);
+      color: #999;
       cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .primary-button {
+      background: linear-gradient(45deg, #1a73e8, #4285f4);
+      color: white;
+      grid-column: span 2;
+    }
+
+    .primary-button:hover {
+      background: linear-gradient(45deg, #1557b0, #3367d6);
+      color: white;
     }
 
     #tabTree {
@@ -115,25 +247,185 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    /* Tutorial Modal */
+    .tutorial-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tutorial-modal {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 360px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .tutorial-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #666;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tutorial-close:hover {
+      background: #f0f0f0;
+    }
+
+    .tutorial-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a73e8;
+      margin-bottom: 16px;
+      padding-right: 32px;
+    }
+
+    .tutorial-section {
+      margin-bottom: 20px;
+    }
+
+    .tutorial-section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .tutorial-section p {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .keyboard-shortcut {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #333;
+    }
+
+    .feature-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .feature-list li {
+      padding: 4px 0;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .feature-list li::before {
+      content: '✓ ';
+      color: #4CAF50;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-  <div class="control-panel">
-    <button id="toggleTracking">Start Tracking</button>
-    <span id="trackingStatus" class="status inactive">Not Tracking</span>
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🌳</div>
+      <div class="logo-text">TabTreeTracker</div>
+      <button id="helpButton" class="help-button" aria-label="Show help and tutorial">❓</button>
+    </div>
+
+    <div class="control-panel">
+      <div class="tracking-toggle">
+        <label for="toggleTracking">Tracking</label>
+        <div id="toggleTracking" class="toggle-switch" role="switch" aria-checked="false" aria-label="Toggle tab tracking" tabindex="0">
+          <div class="toggle-slider"></div>
+        </div>
+      </div>
+      <span id="trackingStatus" class="status" aria-live="polite">Loading...</span>
+    </div>
   </div>
 
-  <div class="button-group">
-    <button id="saveButton">Save Tree</button>
-    <button id="loadButton">Load Tree</button>
-    <button id="clearButton">Clear Tree</button>
-    <button id="openViewer">Open Viewer</button>
+  <div class="main-content">
+    <div class="button-group" role="group" aria-label="Tree management actions">
+      <button id="saveButton" aria-label="Save current tree data to file">💾 Save Tree</button>
+      <button id="loadButton" aria-label="Load tree data from file">📁 Load Tree</button>
+      <button id="clearButton" aria-label="Clear all tree data">🗑️ Clear Tree</button>
+      <button id="openViewer" class="primary-button" aria-label="Open tree viewer in new tab">🔍 Open Viewer</button>
+    </div>
+
+    <input type="file" id="fileInput" accept=".json" style="display: none;">
+
+    <div id="tabTree"></div>
   </div>
 
-  <input type="file" id="fileInput" accept=".json" style="display: none;">
+  <!-- Tutorial Modal -->
+  <div id="tutorialOverlay" class="tutorial-overlay">
+    <div class="tutorial-modal">
+      <button class="tutorial-close" id="closeTutorial" aria-label="Close tutorial">×</button>
+      <h2 class="tutorial-title">Welcome to TabTreeTracker! 🌳</h2>
 
-  <div id="tabTree"></div>
-  
+      <div class="tutorial-section">
+        <h3>What is TabTreeTracker?</h3>
+        <p>TabTreeTracker visualizes your browser tab navigation as an interactive tree. See how tabs are created from other tabs and track your browsing patterns.</p>
+      </div>
+
+      <div class="tutorial-section">
+        <h3>Getting Started</h3>
+        <ul class="feature-list">
+          <li>Click the toggle switch to start tracking your tabs</li>
+          <li>Open new tabs from existing ones to build your tree</li>
+          <li>Use the "Open Viewer" button for a detailed tree visualization</li>
+          <li>Save your tree data for later analysis</li>
+        </ul>
+      </div>
+
+      <div class="tutorial-section">
+        <h3>Keyboard Shortcuts</h3>
+        <p><span class="keyboard-shortcut">T</span> - Toggle tracking</p>
+        <p><span class="keyboard-shortcut">V</span> - Open viewer</p>
+        <p><span class="keyboard-shortcut">Ctrl+S</span> - Save tree</p>
+        <p><span class="keyboard-shortcut">Ctrl+O</span> - Load tree</p>
+        <p><span class="keyboard-shortcut">Shift+C</span> - Clear tree</p>
+      </div>
+
+      <div class="tutorial-section">
+        <h3>Privacy & Settings</h3>
+        <p>Visit the extension options to configure excluded domains and enable content analysis. All data is stored locally on your device.</p>
+      </div>
+
+      <div class="tutorial-section">
+        <h3>Tips</h3>
+        <ul class="feature-list">
+          <li>Use the viewer for better visualization of large trees</li>
+          <li>Export your data regularly for backup</li>
+          <li>Configure excluded domains for sensitive sites</li>
+          <li>Content analysis helps identify page topics</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 </html>

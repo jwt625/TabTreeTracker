@@ -13,7 +13,10 @@ const elements = {
   loadButton: null,
   clearButton: null,
   viewerButton: null,
-  fileInput: null
+  fileInput: null,
+  helpButton: null,
+  tutorialOverlay: null,
+  closeTutorial: null
 };
 
 // Initialize popup
@@ -31,13 +34,22 @@ document.addEventListener('DOMContentLoaded', async function() {
   elements.clearButton = document.getElementById('clearButton');
   elements.viewerButton = document.getElementById('openViewer');
   elements.fileInput = document.getElementById('fileInput');
+  elements.helpButton = document.getElementById('helpButton');
+  elements.tutorialOverlay = document.getElementById('tutorialOverlay');
+  elements.closeTutorial = document.getElementById('closeTutorial');
 
   setupEventListeners();
   await initializeState();
+
+  // Show tutorial for first-time users
+  checkFirstTimeUser();
 });
 
 // Set up event listeners
 function setupEventListeners() {
+  // Add keyboard navigation
+  setupKeyboardNavigation();
+
   // Tracking toggle
   elements.toggleButton.addEventListener('click', async () => {
     try {
@@ -159,6 +171,23 @@ function setupEventListeners() {
       url: chrome.runtime.getURL('viewer/viewer.html')
     });
   });
+
+  // Help button
+  elements.helpButton.addEventListener('click', () => {
+    showTutorial();
+  });
+
+  // Tutorial close button
+  elements.closeTutorial.addEventListener('click', () => {
+    hideTutorial();
+  });
+
+  // Close tutorial when clicking overlay
+  elements.tutorialOverlay.addEventListener('click', (event) => {
+    if (event.target === elements.tutorialOverlay) {
+      hideTutorial();
+    }
+  });
 }
 
 // Initialize state from background
@@ -219,11 +248,69 @@ async function loadTreeDataLazy() {
   }
 }
 
+// Setup keyboard navigation
+function setupKeyboardNavigation() {
+  // Handle keyboard events for toggle switch
+  elements.toggleButton.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      elements.toggleButton.click();
+    }
+  });
+
+  // Global keyboard shortcuts
+  document.addEventListener('keydown', (event) => {
+    // Don't trigger shortcuts if user is typing in an input
+    if (event.target.tagName === 'INPUT') return;
+
+    if (event.ctrlKey || event.metaKey) {
+      switch (event.key) {
+        case 's':
+          event.preventDefault();
+          elements.saveButton.click();
+          break;
+        case 'o':
+          event.preventDefault();
+          elements.loadButton.click();
+          break;
+      }
+    }
+
+    // Other shortcuts
+    switch (event.key) {
+      case 't':
+        event.preventDefault();
+        elements.toggleButton.click();
+        break;
+      case 'v':
+        event.preventDefault();
+        elements.viewerButton.click();
+        break;
+      case 'c':
+        if (event.shiftKey) {
+          event.preventDefault();
+          elements.clearButton.click();
+        }
+        break;
+    }
+  });
+}
+
 // Update UI based on tracking state
 function updateTrackingUI(isTracking) {
   currentState.isTracking = isTracking;
-  elements.toggleButton.textContent = isTracking ? 'Stop Tracking' : 'Start Tracking';
-  elements.statusIndicator.textContent = isTracking ? 'Tracking Active' : 'Not Tracking';
+
+  // Update toggle switch appearance and ARIA attributes
+  if (isTracking) {
+    elements.toggleButton.classList.add('active');
+    elements.toggleButton.setAttribute('aria-checked', 'true');
+  } else {
+    elements.toggleButton.classList.remove('active');
+    elements.toggleButton.setAttribute('aria-checked', 'false');
+  }
+
+  // Update status text
+  elements.statusIndicator.textContent = isTracking ? 'Active' : 'Inactive';
   elements.statusIndicator.className = `status ${isTracking ? 'active' : 'inactive'}`;
 }
 
@@ -375,6 +462,34 @@ function showSuccess(message) {
       successDiv.remove();
     }
   }, 3000);
+}
+
+// Tutorial functions
+function showTutorial() {
+  elements.tutorialOverlay.style.display = 'flex';
+  // Focus the close button for accessibility
+  elements.closeTutorial.focus();
+}
+
+function hideTutorial() {
+  elements.tutorialOverlay.style.display = 'none';
+}
+
+// Check if this is a first-time user
+async function checkFirstTimeUser() {
+  try {
+    const result = await chrome.storage.local.get(['hasSeenTutorial']);
+    if (!result.hasSeenTutorial) {
+      // Show tutorial after a short delay
+      setTimeout(() => {
+        showTutorial();
+        // Mark as seen
+        chrome.storage.local.set({ hasSeenTutorial: true });
+      }, 1000);
+    }
+  } catch (error) {
+    console.error('Failed to check first-time user status:', error);
+  }
 }
 
 // Show error message
