@@ -104,22 +104,8 @@ export class ZoomControls {
   applyAxisZoom() {
     if (!this.viewer.treeVisualizer) return;
 
-    const treeVis = this.viewer.treeVisualizer;
-    const container = document.getElementById('tree-container');
-    const baseWidth = container.clientWidth;
-    const baseHeight = container.clientHeight;
-
-    // Update tree layout size based on current scales
-    const isVertical = treeVis.options.layout === 'vertical';
-    const newSize = isVertical ? 
-      [baseWidth * this.scales.x, baseHeight * this.scales.y] : 
-      [baseHeight * this.scales.y, baseWidth * this.scales.x];
-
-    // Update the layout with new dimensions
-    treeVis.treeLayout.size(newSize);
-
-    // Re-render the tree with scaled dimensions but maintain node sizes
-    treeVis.render(true);
+    // Use the proper updateAxisZoom method instead of directly calling render
+    this.viewer.treeVisualizer.updateAxisZoom(this.scales);
   }
 
   stopAllZoom() {

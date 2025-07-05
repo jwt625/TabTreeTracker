@@ -138,7 +138,7 @@ export class ViewerControls {
           exportTimestamp: Date.now(),
           exportedFrom: 'viewer',
           layout: this.viewer.currentLayout,
-          extensionVersion: chrome.runtime.getManifest().version
+          extensionVersion: this.getExtensionVersion()
         },
         tabTree: treeData,
         exportedBy: 'TabTreeTracker'
@@ -225,6 +225,17 @@ export class ViewerControls {
         notification.remove();
       }
     }, 3000);
+  }
+
+  getExtensionVersion() {
+    try {
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getManifest) {
+        return chrome.runtime.getManifest().version;
+      }
+    } catch (error) {
+      console.warn('Could not get extension version:', error);
+    }
+    return 'unknown';
   }
 
   handleZoom(action) {

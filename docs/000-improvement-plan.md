@@ -184,11 +184,63 @@ This document outlines a comprehensive improvement plan for the TabTreeTracker C
   - Interactive feature demonstrations
   - Help documentation
 
-## Stage 6: Testing & Documentation (Priority: MEDIUM)
+## Stage 6: Domain-Based Cluster Visualization (Priority: HIGH)
+**Estimated Duration: 3-4 weeks**
+**Goal: Implement Obsidian-style domain clustering while maintaining relationships**
+
+> **📋 Detailed Proposal**: See [002-domain-clustering-proposal.md](./002-domain-clustering-proposal.md) for comprehensive technical details.
+
+### 6.1 Data Structure Enhancement
+- [ ] **Domain extraction and grouping**
+  - Implement domain extraction utilities from URLs
+  - Create intelligent domain grouping algorithms
+  - Handle subdomain hierarchies (e.g., github.com vs user.github.io)
+  - Add domain-based node properties
+
+- [ ] **Connection mapping system**
+  - Build relationship tracking between domains
+  - Calculate connection strengths and frequencies
+  - Implement bidirectional relationship detection
+  - Create domain interaction matrices
+
+### 6.2 Force-Directed Visualization Engine
+- [ ] **Replace tree layout with force simulation**
+  - Implement D3.js force-directed layout
+  - Create custom clustering forces for domain grouping
+  - Add collision detection and node separation
+  - Implement smooth transitions between layouts
+
+- [ ] **Domain cluster rendering**
+  - Create visual domain boundaries (hulls/backgrounds)
+  - Implement domain color coding system
+  - Add domain labels and statistics
+  - Create cluster expansion/collapse functionality
+
+### 6.3 Enhanced User Interface
+- [ ] **Dual visualization modes**
+  - Add toggle between tree and cluster views
+  - Implement smooth animated transitions
+  - Preserve user context during mode switches
+  - Add view-specific controls
+
+- [ ] **Cluster interaction controls**
+  - Domain filtering and highlighting
+  - Cluster strength adjustment sliders
+  - Layout algorithm selection
+  - Focus/zoom on specific domains
+
+### 6.4 Performance Optimization
+- [ ] **Level-of-detail rendering**
+  - Implement zoom-based detail levels
+  - Add efficient rendering for large datasets
+  - Create progressive loading system
+  - Optimize force simulation performance
+
+## Stage 7: Testing & Documentation (Priority: MEDIUM)
 **Estimated Duration: 2-3 weeks**
 **Goal: Ensure reliability and maintainability**
 
-### 6.1 Testing Infrastructure
+### 7.1 Testing Infrastructure
 - [ ] **Set up unit testing**
   - Test framework setup (Jest)
   - Unit tests for core functions
@@ -199,7 +251,7 @@ This document outlines a comprehensive improvement plan for the TabTreeTracker C
   - Test extension installation/uninstallation
   - Cross-browser compatibility testing
 
-### 6.2 Documentation
+### 7.2 Documentation
 - [ ] **Update README.md**
   - Remove placeholder content
   - Add actual screenshots and demos

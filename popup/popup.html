@@ -341,7 +341,7 @@
     }
 
     .feature-list li::before {
-      content: '✓ ';
+      content: '• ';
       color: #4CAF50;
       font-weight: bold;
     }
@@ -350,9 +350,9 @@
 <body>
   <div class="header">
     <div class="logo">
-      <div class="logo-icon">🌳</div>
+      <div class="logo-icon">T</div>
       <div class="logo-text">TabTreeTracker</div>
-      <button id="helpButton" class="help-button" aria-label="Show help and tutorial">❓</button>
+      <button id="helpButton" class="help-button" aria-label="Show help and tutorial">?</button>
     </div>
 
     <div class="control-panel">
@@ -368,10 +368,10 @@
 
   <div class="main-content">
     <div class="button-group" role="group" aria-label="Tree management actions">
-      <button id="saveButton" aria-label="Save current tree data to file">💾 Save Tree</button>
-      <button id="loadButton" aria-label="Load tree data from file">📁 Load Tree</button>
-      <button id="clearButton" aria-label="Clear all tree data">🗑️ Clear Tree</button>
-      <button id="openViewer" class="primary-button" aria-label="Open tree viewer in new tab">🔍 Open Viewer</button>
+      <button id="saveButton" aria-label="Save current tree data to file">Save Tree</button>
+      <button id="loadButton" aria-label="Load tree data from file">Load Tree</button>
+      <button id="clearButton" aria-label="Clear all tree data">Clear Tree</button>
+      <button id="openViewer" class="primary-button" aria-label="Open tree viewer in new tab">Open Viewer</button>
     </div>
 
     <input type="file" id="fileInput" accept=".json" style="display: none;">
@@ -383,7 +383,7 @@
   <div id="tutorialOverlay" class="tutorial-overlay">
     <div class="tutorial-modal">
       <button class="tutorial-close" id="closeTutorial" aria-label="Close tutorial">×</button>
-      <h2 class="tutorial-title">Welcome to TabTreeTracker! 🌳</h2>
+      <h2 class="tutorial-title">Welcome to TabTreeTracker!</h2>
 
       <div class="tutorial-section">
         <h3>What is TabTreeTracker?</h3>
