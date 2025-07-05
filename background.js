@@ -711,6 +711,45 @@ function handleMessages(request, _sender, sendResponse) {
         sendResponse({ success: true });
         return false; // Synchronous response
 
+      case 'importTabTree':
+        try {
+          if (!request.tabTree || typeof request.tabTree !== 'object') {
+            throw new Error('Invalid tree data provided');
+          }
+
+          // Clear existing data first
+          State.tabTree = {};
+          State.tabHistory = {};
+
+          // Import the new tree data
+          State.tabTree = request.tabTree;
+
+          // Rebuild tab history from tree data
+          const rebuildHistory = (node) => {
+            if (node.tabId) {
+              if (!State.tabHistory[node.tabId]) {
+                State.tabHistory[node.tabId] = [];
+              }
+              State.tabHistory[node.tabId].push(node);
+            }
+            if (node.children) {
+              node.children.forEach(rebuildHistory);
+            }
+          };
+
+          Object.values(State.tabTree).forEach(rebuildHistory);
+
+          // Save the imported data
+          State.saveState();
+
+          console.log('Successfully imported tree data');
+          sendResponse({ success: true });
+        } catch (error) {
+          console.error('Failed to import tree data:', error);
+          sendResponse({ error: error.message });
+        }
+        return false; // Synchronous response
+
       case 'updateConfig':
         chrome.storage.local.set({ config: request.config })
           .then(() => {

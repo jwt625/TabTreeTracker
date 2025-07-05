@@ -133,7 +133,7 @@ class TabTreeViewer {
   }
 
   setupMessageListener() {
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       if (message.action === 'treeUpdated') {
         this.handleTreeUpdate(message.data);
       }
@@ -157,7 +157,29 @@ class TabTreeViewer {
 
   handleNodeClick(node) {
     console.log('Node clicked:', node);
-    // We can expand this later with more functionality
+
+    if (node.data && node.data.url) {
+      const url = node.data.url;
+
+      // Don't open viewer URLs or invalid URLs
+      if (url.startsWith(chrome.runtime.getURL('viewer/'))) {
+        console.log('Skipping viewer URL');
+        return;
+      }
+
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        console.log('Skipping non-http URL:', url);
+        return;
+      }
+
+      // Ask user for confirmation before opening URL
+      const confirmMessage = `Open URL in new tab?\n\n${url}`;
+      if (confirm(confirmMessage)) {
+        chrome.tabs.create({ url: url, active: false });
+      }
+    } else {
+      console.log('No URL found for node:', node);
+    }
   }
 
   showLoading(show) {

@@ -10,8 +10,10 @@ const elements = {
   statusIndicator: null,
   treeContainer: null,
   saveButton: null,
+  loadButton: null,
   clearButton: null,
-  viewerButton: null
+  viewerButton: null,
+  fileInput: null
 };
 
 // Initialize popup
@@ -25,8 +27,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   elements.statusIndicator = document.getElementById('trackingStatus');
   elements.treeContainer = document.getElementById('tabTree');
   elements.saveButton = document.getElementById('saveButton');
+  elements.loadButton = document.getElementById('loadButton');
   elements.clearButton = document.getElementById('clearButton');
   elements.viewerButton = document.getElementById('openViewer');
+  elements.fileInput = document.getElementById('fileInput');
 
   setupEventListeners();
   await initializeState();
@@ -53,11 +57,26 @@ function setupEventListeners() {
     try {
       const treeData = await sendMessage('getTabTree');
       if (treeData.error) throw new Error(treeData.error);
-      
-      const blob = new Blob([JSON.stringify(treeData.tabTree, null, 2)], {
+
+      // Create enhanced export data with metadata
+      const exportData = {
+        metadata: {
+          version: '1.0',
+          exportDate: new Date().toISOString(),
+          exportTimestamp: Date.now(),
+          nodeCount: countNodes(treeData.tabTree),
+          extensionVersion: chrome.runtime.getManifest().version,
+          userAgent: navigator.userAgent,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        },
+        tabTree: treeData.tabTree,
+        exportedBy: 'TabTreeTracker'
+      };
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
         type: 'application/json'
       });
-      
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -66,10 +85,58 @@ function setupEventListeners() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+
+      // Show success message
+      showSuccess('Tree data exported successfully');
     } catch (error) {
       console.error('Failed to save tree:', error);
       showError('Failed to save tree');
     }
+  });
+
+  // Load button
+  elements.loadButton.addEventListener('click', () => {
+    elements.fileInput.click();
+  });
+
+  // File input handler
+  elements.fileInput.addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      // Validate the imported data
+      let treeData;
+      if (data.tabTree && data.metadata) {
+        // New format with metadata
+        treeData = data.tabTree;
+        console.log('Imported tree with metadata:', data.metadata);
+        showSuccess(`Imported tree from ${new Date(data.metadata.exportDate).toLocaleDateString()}`);
+      } else if (typeof data === 'object') {
+        // Legacy format - assume it's the tree data directly
+        treeData = data;
+        showSuccess('Imported tree data (legacy format)');
+      } else {
+        throw new Error('Invalid file format');
+      }
+
+      // Send the tree data to background script
+      const response = await sendMessage('importTabTree', { tabTree: treeData });
+      if (response.error) throw new Error(response.error);
+
+      // Update the display
+      updateTreeDisplay(treeData);
+
+    } catch (error) {
+      console.error('Failed to load tree:', error);
+      showError(`Failed to load tree: ${error.message}`);
+    }
+
+    // Reset file input
+    event.target.value = '';
   });
 
   // Clear button
@@ -249,6 +316,65 @@ function sendMessage(action, data = {}) {
 // Helper function to get timestamp for filename
 function getTimestamp() {
   return new Date().toISOString().replace(/[:.]/g, '-');
+}
+
+// Helper function to count nodes in tree
+function countNodes(tree) {
+  let count = 0;
+  const countInNode = (node) => {
+    count++;
+    if (node.children) {
+      node.children.forEach(countInNode);
+    }
+  };
+
+  if (tree && typeof tree === 'object') {
+    Object.values(tree).forEach(countInNode);
+  }
+  return count;
+}
+
+// Show success message
+function showSuccess(message) {
+  // Create success notification element
+  const successDiv = document.createElement('div');
+  successDiv.className = 'success-notification';
+  successDiv.style.cssText = `
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 1000;
+    max-width: 300px;
+    font-size: 14px;
+    animation: slideIn 0.3s ease-out;
+  `;
+  successDiv.textContent = message;
+
+  // Add close button
+  const closeBtn = document.createElement('span');
+  closeBtn.innerHTML = '&times;';
+  closeBtn.style.cssText = `
+    float: right;
+    margin-left: 10px;
+    cursor: pointer;
+    font-weight: bold;
+  `;
+  closeBtn.onclick = () => successDiv.remove();
+  successDiv.appendChild(closeBtn);
+
+  document.body.appendChild(successDiv);
+
+  // Auto-remove after 3 seconds
+  setTimeout(() => {
+    if (successDiv.parentNode) {
+      successDiv.remove();
+    }
+  }, 3000);
 }
 
 // Show error message

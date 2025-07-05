@@ -193,6 +193,42 @@
     word-break: break-all;
   }
 
+  /* Notification styles */
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  .notification {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  /* Responsive controls */
+  @media (max-width: 768px) {
+    #controls {
+      position: relative;
+      top: 0;
+      left: 0;
+      width: 100%;
+      margin-bottom: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    #controls button {
+      flex: 1;
+      min-width: 80px;
+      font-size: 12px;
+      padding: 6px 8px;
+    }
+
+    #tree-container {
+      margin-top: 10px;
+      height: calc(100vh - 120px);
+    }
+  }
+
   </style>
 </head>
 <body>
