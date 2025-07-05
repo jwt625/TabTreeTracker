@@ -101,8 +101,6 @@ class TabTreeViewer {
     }
   }
 
-
-  
   async requestData() {
     return new Promise((resolve) => {
       chrome.runtime.sendMessage({ action: "getTabTree" }, response => {
