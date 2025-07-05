@@ -255,6 +255,12 @@ export class TreeVisualizer {
         return (a.parent === b.parent ? 1.5 : 2) / Math.min(this.axisScales.x, this.axisScales.y);
       });
 
+    // Safety check for data
+    if (!this.data) {
+      console.warn('TreeVisualizer: No data available for rendering');
+      return;
+    }
+
     const root = d3.hierarchy(this.data);
     const treeData = this.treeLayout(root);
 
@@ -532,6 +538,28 @@ export class TreeVisualizer {
           break;
       }
     });
+  }
+
+  /**
+   * Destroy the visualizer and cleanup resources
+   */
+  destroy() {
+    // Stop all ongoing transitions
+    if (this.svg) {
+      this.svg.selectAll('*').interrupt();
+    }
+
+    // Clear the container
+    if (this.container) {
+      this.container.innerHTML = '';
+    }
+
+    // Clear references
+    this.svg = null;
+    this.nodesGroup = null;
+    this.linksGroup = null;
+    this.zoom = null;
+    this.data = null;
   }
 
 }

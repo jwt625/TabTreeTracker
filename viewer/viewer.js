@@ -2,9 +2,8 @@ import { TreeVisualizer } from './components/tree.js';
 import { ViewerControls } from './components/controls.js';
 import { FileLoader } from './components/file-loader.js';
 import { ZoomControls } from './components/zoom-controls.js';
-// TODO: Re-enable after fixing syntax errors
-// import { ViewModeController } from './components/view-mode-controller.js';
-// import { ClusterControls } from './components/cluster-controls.js';
+import { ViewModeController } from './components/view-mode-controller.js';
+import { ClusterControls } from './components/cluster-controls.js';
 
 class TabTreeViewer {
   constructor() {
@@ -81,16 +80,44 @@ class TabTreeViewer {
       this.controls = new ViewerControls(this);
       const { tabTree } = await this.requestData();
 
-      // For now, use legacy tree visualizer to avoid syntax errors
-      // TODO: Enable domain clustering after fixing syntax issues
-      this.treeVisualizer = new TreeVisualizer(
+      // Store both raw and processed data for different visualizers
+      this.rawTabTree = tabTree;
+      this.processedTreeData = this.processTreeData(tabTree);
+
+      // Initialize ViewModeController for both tree and cluster views
+      this.viewModeController = new ViewModeController(
         document.getElementById('tree-container'),
-        this.processTreeData(tabTree),
         {
+          raw: this.rawTabTree,
+          processed: this.processedTreeData
+        },
+        {
+          defaultMode: 'tree',
           layout: this.currentLayout,
-          onNodeClick: this.handleNodeClick.bind(this)
+          onNodeClick: this.handleNodeClick.bind(this),
+          onModeChange: (mode) => {
+            this.currentViewMode = mode;
+            if (this.controls) {
+              this.controls.updateViewModeButton();
+            }
+          }
         }
       );
+
+      // Initialize cluster controls (disable mode toggle since we have one in main controls)
+      this.clusterControls = new ClusterControls(
+        document.getElementById('tree-container'),
+        this.viewModeController,
+        {
+          showModeToggle: false,
+          showClusterControls: true,
+          showDomainFilters: true,
+          showLayoutOptions: true
+        }
+      );
+
+      // Keep reference to tree visualizer for backward compatibility
+      this.treeVisualizer = this.viewModeController.getCurrentVisualizer();
 
       this.setupMessageListener();
       this.showLoading(false);
@@ -114,10 +141,44 @@ class TabTreeViewer {
 
   async requestData() {
     return new Promise((resolve) => {
-      chrome.runtime.sendMessage({ action: 'getTabTree' }, response => {
-        resolve(response || { tabTree: {} });
-      });
+      // Check if we're running in a Chrome extension context
+      if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+        try {
+          chrome.runtime.sendMessage({ action: 'getTabTree' }, response => {
+            resolve(response || { tabTree: {} });
+          });
+        } catch (error) {
+          console.warn('Failed to get data from extension:', error);
+          resolve({ tabTree: this.getFallbackData() });
+        }
+      } else {
+        // Running standalone, provide fallback data
+        console.log('Running in standalone mode, using fallback data');
+        resolve({ tabTree: this.getFallbackData() });
+      }
     });
+  }
+
+  getFallbackData() {
+    // Provide some sample data for testing
+    return {
+      'tab1': {
+        title: 'Sample Tab 1',
+        url: 'https://example.com',
+        children: [
+          {
+            title: 'Child Tab 1',
+            url: 'https://example.com/page1',
+            children: []
+          }
+        ]
+      },
+      'tab2': {
+        title: 'Sample Tab 2',
+        url: 'https://google.com',
+        children: []
+      }
+    };
   }
 
   processTreeData(rawTree) {
@@ -127,17 +188,35 @@ class TabTreeViewer {
       children: []
     };
 
+    // Safety check for rawTree
+    if (!rawTree || typeof rawTree !== 'object') {
+      console.warn('processTreeData: Invalid rawTree data:', rawTree);
+      return root; // Return empty root with children array
+    }
+
     Object.values(rawTree).forEach(node => {
-      root.children.push(this.processNode(node));
+      if (node) {
+        root.children.push(this.processNode(node));
+      }
     });
 
     return root;
   }
 
   processNode(node) {
+    // Safety check for node
+    if (!node) {
+      return {
+        name: 'Unknown',
+        url: '',
+        data: {},
+        children: []
+      };
+    }
+
     return {
-      name: node.title || node.url,
-      url: node.url,
+      name: node.title || node.url || 'Untitled',
+      url: node.url || '',
       data: node,
       children: node.children ? node.children.map(child => this.processNode(child)) : []
     };
@@ -154,12 +233,19 @@ class TabTreeViewer {
   }
 
   async handleTreeUpdate(newTree) {
+    // Update stored data
+    this.rawTabTree = newTree;
+    this.processedTreeData = this.processTreeData(newTree);
+
     if (this.viewModeController) {
-      this.viewModeController.updateData(this.processTreeData(newTree));
+      this.viewModeController.updateData({
+        raw: this.rawTabTree,
+        processed: this.processedTreeData
+      });
     }
     // Legacy support
     if (this.treeVisualizer) {
-      this.treeVisualizer.updateData(this.processTreeData(newTree));
+      this.treeVisualizer.updateData(this.processedTreeData);
     }
   }
 

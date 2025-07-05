@@ -443,11 +443,26 @@ export class ClusterVisualizer {
   }
 
   destroy() {
+    // Stop simulation
     if (this.simulation) {
       this.simulation.stop();
     }
+
+    // Stop all ongoing transitions
+    if (this.svg) {
+      this.svg.selectAll('*').interrupt();
+    }
+
+    // Clear the container
     if (this.container) {
       this.container.innerHTML = '';
     }
+
+    // Clear references
+    this.svg = null;
+    this.simulation = null;
+    this.nodes = null;
+    this.links = null;
+    this.boundaryManager = null;
   }
 }

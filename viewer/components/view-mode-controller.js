@@ -119,27 +119,31 @@ export class ViewModeController {
 
     // Create transition overlay
     const overlay = this.createTransitionOverlay();
-    
+
     // Fade out current visualizer
     this.fadeOut(this.currentVisualizer, this.options.transitionDuration / 2)
       .then(() => {
         // Destroy old visualizer
         this.destroyVisualizer(this.currentVisualizer);
-        
+
+        // Small delay to ensure cleanup is complete
+        return new Promise(resolve => setTimeout(resolve, 50));
+      })
+      .then(() => {
         // Create new visualizer
         this.createVisualizer(toMode);
         this.currentMode = toMode;
-        
+
         // Fade in new visualizer
         return this.fadeIn(this.currentVisualizer, this.options.transitionDuration / 2);
       })
       .then(() => {
         // Remove overlay
         overlay.remove();
-        
+
         // Restore state
         this.restoreState();
-        
+
         this.onTransitionEnd(fromMode, toMode);
         this.onModeChange(toMode);
       });
@@ -157,16 +161,20 @@ export class ViewModeController {
     };
 
     if (mode === 'tree') {
+      // Tree visualizer needs processed hierarchical data
+      const treeData = this.data.processed || this.data;
       this.treeVisualizer = new TreeVisualizer(
-        this.container, 
-        this.data, 
+        this.container,
+        treeData,
         visualizerOptions
       );
       this.currentVisualizer = this.treeVisualizer;
     } else if (mode === 'cluster') {
+      // Cluster visualizer needs raw data for domain extraction
+      const clusterData = this.data.raw || this.data;
       this.clusterVisualizer = new ClusterVisualizer(
-        this.container, 
-        this.data, 
+        this.container,
+        clusterData,
         visualizerOptions
       );
       this.currentVisualizer = this.clusterVisualizer;
@@ -325,7 +333,14 @@ export class ViewModeController {
   updateData(newData) {
     this.data = newData;
     if (this.currentVisualizer && this.currentVisualizer.updateData) {
-      this.currentVisualizer.updateData(newData);
+      // Pass the appropriate data format based on current mode
+      if (this.currentMode === 'tree') {
+        const treeData = newData.processed || newData;
+        this.currentVisualizer.updateData(treeData);
+      } else if (this.currentMode === 'cluster') {
+        const clusterData = newData.raw || newData;
+        this.currentVisualizer.updateData(clusterData);
+      }
     }
   }
 
