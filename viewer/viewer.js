@@ -14,7 +14,7 @@ class TabTreeViewer {
     this.init();
   }
 
-  // Get tab ID - keep as separate async method
+
   async getTabId() {
     return new Promise((resolve) => {
       if (window.chrome && chrome.tabs) {
