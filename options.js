@@ -28,6 +28,7 @@ function showStatus(message, isError = false) {
 function save_options() {
   const excludedDomainsText = document.getElementById('excludedDomains').value;
   const timeZone = document.getElementById('timeZone').value;
+  const enableContentAnalysis = document.getElementById('enableContentAnalysis').checked;
 
   // Validate and process excluded domains
   const excludedDomains = excludedDomainsText
@@ -49,7 +50,10 @@ function save_options() {
   }
   // Save to storage
   chrome.storage.local.set({
-    config: { excludedDomains: excludedDomains },
+    config: {
+      excludedDomains: excludedDomains,
+      enableContentAnalysis: enableContentAnalysis
+    },
     userTimeZone: timeZone
   }, function() {
     if (chrome.runtime.lastError) {
@@ -60,7 +64,10 @@ function save_options() {
     showStatus('Options saved successfully');
 
     // Send message to background script to update config and time zone
-    chrome.runtime.sendMessage({action: "updateConfig", config: { excludedDomains: excludedDomains }}, () => {
+    chrome.runtime.sendMessage({action: "updateConfig", config: {
+      excludedDomains: excludedDomains,
+      enableContentAnalysis: enableContentAnalysis
+    }}, () => {
       if (chrome.runtime.lastError) {
         console.error('Failed to update config:', chrome.runtime.lastError);
       }
@@ -78,11 +85,15 @@ function save_options() {
 // stored in chrome.storage.
 function restore_options() {
   chrome.storage.local.get({
-    config: { excludedDomains: [] },
+    config: {
+      excludedDomains: [],
+      enableContentAnalysis: false // Default to false for privacy
+    },
     userTimeZone: 'UTC'
   }, function(items) {
     document.getElementById('excludedDomains').value = items.config.excludedDomains.join('\n');
     document.getElementById('timeZone').value = items.userTimeZone;
+    document.getElementById('enableContentAnalysis').checked = items.config.enableContentAnalysis || false;
   });
 }
 
