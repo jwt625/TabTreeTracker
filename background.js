@@ -17,6 +17,7 @@ const State = {
   excludedDomains: [],
   userTimeZone: 'UTC',
   isTracking: false,
+  enableContentAnalysis: false,
   extensionInitialized: false,
   trackingCheckInterval: null,
   viewerPort: null,
@@ -146,7 +147,7 @@ const TabManager = {
     const node = {
       id: `${tab.id}-${timestamp}`,
       tabId: tab.id,
-      url: tab.url,
+      url: sanitizeUrl(tab.url),
       title: tab.title,
       createdAt: timestamp,
       createdAtHuman: getHumanReadableTime(timestamp),
@@ -331,6 +332,7 @@ async function initializeExtension() {
 
     // Initialize state
     State.excludedDomains = result.config?.excludedDomains || [];
+    State.enableContentAnalysis = result.config?.enableContentAnalysis || false;
     State.tabTree = result.tabTree || {};
     State.userTimeZone = result.userTimeZone || 'UTC';
     State.isTracking = result.isTracking || false;
@@ -369,6 +371,45 @@ initializeExtension().then(() => {
 // =============================================================================
 // Utility Functions
 // =============================================================================
+function sanitizeUrl(url) {
+  if (!url) return url;
+
+  try {
+    const urlObj = new URL(url);
+
+    // List of sensitive query parameters to remove
+    const sensitiveParams = [
+      'token', 'access_token', 'auth_token', 'api_key', 'apikey',
+      'password', 'pwd', 'pass', 'secret', 'key',
+      'session', 'sessionid', 'session_id', 'sid',
+      'csrf', 'csrf_token', 'xsrf', 'xsrf_token',
+      'oauth', 'oauth_token', 'oauth_signature',
+      'jwt', 'bearer', 'authorization',
+      'email', 'phone', 'ssn', 'credit_card',
+      'user_id', 'userid', 'uid'
+    ];
+
+    // Remove sensitive parameters
+    sensitiveParams.forEach(param => {
+      urlObj.searchParams.delete(param);
+    });
+
+    // Remove parameters that look like tokens (long random strings)
+    for (const [key, value] of urlObj.searchParams.entries()) {
+      // Remove parameters with long random-looking values (likely tokens)
+      if (value.length > 20 && /^[a-zA-Z0-9+/=_-]+$/.test(value)) {
+        urlObj.searchParams.delete(key);
+      }
+    }
+
+    return urlObj.toString();
+  } catch (error) {
+    // If URL parsing fails, return original URL
+    console.warn('Failed to sanitize URL:', url, error);
+    return url;
+  }
+}
+
 function isExcluded(url) {
     if (!url) return true;
     if (url.startsWith(chrome.runtime.getURL('viewer/'))) return true;
@@ -467,6 +508,7 @@ function handleMessages(request, _sender, sendResponse) {
         chrome.storage.local.set({ config: request.config })
           .then(() => {
             State.excludedDomains = request.config.excludedDomains || [];
+            State.enableContentAnalysis = request.config.enableContentAnalysis || false;
             sendResponse({ success: true });
           })
           .catch(error => {
@@ -496,21 +538,31 @@ function handleMessages(request, _sender, sendResponse) {
 //
 // Add functions for word frequency analysis
 async function analyzePageContent(tabId) {
-    if (!State.isTracking) return null;
+    if (!State.isTracking || !State.enableContentAnalysis) return null;
 
-    // Inject content script to analyze the page
+    // Get tab info to check if we should analyze this domain
     try {
+        const tab = await chrome.tabs.get(tabId);
+        if (!tab || !tab.url) return null;
+
+        // Skip analysis for excluded domains
+        if (isExcluded(tab.url)) return null;
+
+        // Skip analysis for non-http(s) URLs
+        if (!tab.url.startsWith('http://') && !tab.url.startsWith('https://')) return null;
+
+        // Inject content script to analyze the page
         const [{ result }] = await chrome.scripting.executeScript({
-        target: { tabId: tabId },
-        func: getWordFrequency,
-        args: [Array.from(CONTENT_ANALYSIS.STOP_WORDS), DATA.TOP_WORDS_COUNT, CONTENT_ANALYSIS.MIN_WORD_LENGTH]
+            target: { tabId: tabId },
+            func: getWordFrequency,
+            args: [Array.from(CONTENT_ANALYSIS.STOP_WORDS), DATA.TOP_WORDS_COUNT, CONTENT_ANALYSIS.MIN_WORD_LENGTH]
         });
         return result;
     } catch (error) {
         console.error(ERROR_MESSAGES.CONTENT_ANALYSIS_FAILED, error);
         return null;
     }
-    }
+}
   
   
   
