@@ -21,6 +21,8 @@ const State = {
   extensionInitialized: false,
   trackingCheckInterval: null,
   viewerPort: null,
+  contentAnalysisCache: new Map(),
+  lastCleanup: Date.now(),
 
   // Update node in both tree and history
   updateNode: function(node, updates) {
@@ -63,7 +65,7 @@ const State = {
     return null;
   },
 
-  // Save state to storage
+  // Save state to storage (immediate)
   saveState: function() {
     chrome.storage.local.set({
       tabTree: this.tabTree,
@@ -71,10 +73,165 @@ const State = {
     });
   },
 
+  // Debounced save to reduce storage operations
+  debouncedSave: (function() {
+    let timeoutId = null;
+    return function() {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = setTimeout(() => {
+        this.saveState();
+        timeoutId = null;
+      }, TIMING.STORAGE_DEBOUNCE_DELAY);
+    };
+  })(),
+
   // Clear all state
   clearState: function() {
     this.tabTree = {};
     this.tabHistory = {};
+    this.saveState();
+  },
+
+  // Prune old data based on retention period
+  pruneOldData: function() {
+    const retentionPeriod = DATA.DEFAULT_RETENTION_DAYS * 24 * 60 * 60 * 1000; // Convert to milliseconds
+    const cutoffTime = Date.now() - retentionPeriod;
+    let prunedCount = 0;
+
+    // Helper function to recursively prune nodes
+    const pruneNode = (node) => {
+      if (!node) return null;
+
+      // Remove old children first
+      if (node.children) {
+        node.children = node.children
+          .map(child => pruneNode(child))
+          .filter(child => child !== null);
+      }
+
+      // Remove node if it's too old and closed
+      if (node.closedAt && node.closedAt < cutoffTime) {
+        prunedCount++;
+        return null;
+      }
+
+      return node;
+    };
+
+    // Prune tree structure
+    const newTree = {};
+    for (const [rootId, rootNode] of Object.entries(this.tabTree)) {
+      const prunedRoot = pruneNode(rootNode);
+      if (prunedRoot) {
+        newTree[rootId] = prunedRoot;
+      } else {
+        prunedCount++;
+      }
+    }
+
+    this.tabTree = newTree;
+
+    // Prune tab history
+    for (const [tabId, history] of Object.entries(this.tabHistory)) {
+      const filteredHistory = history.filter(node =>
+        !node.closedAt || node.closedAt >= cutoffTime
+      );
+
+      if (filteredHistory.length === 0) {
+        delete this.tabHistory[tabId];
+      } else {
+        this.tabHistory[tabId] = filteredHistory;
+      }
+    }
+
+    if (prunedCount > 0) {
+      console.log(`Pruned ${prunedCount} old nodes`);
+      this.saveState();
+    }
+
+    return prunedCount;
+  },
+
+  // Check if tree size exceeds limits
+  checkTreeSize: function() {
+    const nodeCount = this.countNodes();
+    if (nodeCount > DATA.MAX_TREE_SIZE) {
+      console.warn(`Tree size (${nodeCount}) exceeds maximum (${DATA.MAX_TREE_SIZE})`);
+      // Prune oldest nodes first
+      this.pruneOldData();
+
+      // If still too large, prune more aggressively
+      const newNodeCount = this.countNodes();
+      if (newNodeCount > DATA.MAX_TREE_SIZE) {
+        this.pruneExcessNodes(newNodeCount - DATA.MAX_TREE_SIZE);
+      }
+    }
+  },
+
+  // Count total nodes in tree
+  countNodes: function() {
+    let count = 0;
+    const countInNode = (node) => {
+      count++;
+      if (node.children) {
+        node.children.forEach(countInNode);
+      }
+    };
+
+    Object.values(this.tabTree).forEach(countInNode);
+    return count;
+  },
+
+  // Prune excess nodes (oldest first)
+  pruneExcessNodes: function(excessCount) {
+    const allNodes = [];
+
+    // Collect all nodes with timestamps
+    const collectNodes = (node, path = []) => {
+      allNodes.push({ node, path });
+      if (node.children) {
+        node.children.forEach((child, index) =>
+          collectNodes(child, [...path, 'children', index])
+        );
+      }
+    };
+
+    Object.entries(this.tabTree).forEach(([rootId, rootNode]) =>
+      collectNodes(rootNode, [rootId])
+    );
+
+    // Sort by creation time (oldest first)
+    allNodes.sort((a, b) => a.node.createdAt - b.node.createdAt);
+
+    // Remove oldest nodes
+    let removedCount = 0;
+    for (let i = 0; i < allNodes.length && removedCount < excessCount; i++) {
+      const { path } = allNodes[i];
+
+      if (path.length === 1) {
+        // Root node
+        delete this.tabTree[path[0]];
+      } else {
+        // Child node - remove from parent's children array
+        const parentPath = path.slice(0, -2);
+        const childIndex = path[path.length - 1];
+
+        let parent = this.tabTree;
+        for (const segment of parentPath) {
+          parent = parent[segment];
+        }
+
+        if (parent.children && parent.children[childIndex]) {
+          parent.children.splice(childIndex, 1);
+        }
+      }
+
+      removedCount++;
+    }
+
+    console.log(`Pruned ${removedCount} excess nodes`);
     this.saveState();
   },
 
@@ -196,7 +353,8 @@ const TabManager = {
       State.tabHistory[tab.id].push(newNode);
     }
 
-    State.saveState();
+    State.debouncedSave();
+    State.checkTreeSize();
     return newNode;
   },
 
@@ -340,7 +498,16 @@ async function initializeExtension() {
     // Setup icon and tracking check
     updateIcon(State.isTracking);
     initTrackingCheck();
-    
+
+    // Schedule periodic cleanup
+    schedulePeriodicCleanup();
+
+    // Perform initial cleanup if needed
+    const timeSinceLastCleanup = Date.now() - (State.lastCleanup || 0);
+    if (timeSinceLastCleanup > 24 * 60 * 60 * 1000) { // 24 hours
+      performMaintenanceCleanup();
+    }
+
     State.extensionInitialized = true;
 
     console.log('Extension initialized:', {
@@ -453,7 +620,7 @@ function updateIcon(tracking) {
     if (State.trackingCheckInterval) {
       clearInterval(State.trackingCheckInterval);
     }
-    
+
     State.trackingCheckInterval = setInterval(() => {
       if (State.isTracking) {
         chrome.storage.local.get(['isTracking'], (result) => {
@@ -465,6 +632,46 @@ function updateIcon(tracking) {
       }
     }, TIMING.TRACKING_CHECK_INTERVAL);
   }
+
+  // Schedule periodic cleanup using chrome.alarms
+  function schedulePeriodicCleanup() {
+    chrome.alarms.create('periodicCleanup', {
+      delayInMinutes: 60, // First cleanup in 1 hour
+      periodInMinutes: 24 * 60 // Then every 24 hours
+    });
+  }
+
+  // Perform maintenance cleanup
+  function performMaintenanceCleanup() {
+    console.log('Performing maintenance cleanup...');
+
+    // Prune old data
+    const prunedCount = State.pruneOldData();
+
+    // Clean content analysis cache
+    cleanContentAnalysisCache();
+
+    // Clean throttle map
+    const now = Date.now();
+    for (const [tabId, timestamp] of contentAnalysisThrottle.entries()) {
+      if (now - timestamp > 60 * 60 * 1000) { // 1 hour old
+        contentAnalysisThrottle.delete(tabId);
+      }
+    }
+
+    // Update last cleanup time
+    State.lastCleanup = now;
+    chrome.storage.local.set({ lastCleanup: now });
+
+    console.log(`Maintenance cleanup completed. Pruned ${prunedCount} nodes.`);
+  }
+
+  // Listen for alarm events
+  chrome.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === 'periodicCleanup') {
+      performMaintenanceCleanup();
+    }
+  });
 
 
 // =============================================================================
@@ -536,9 +743,19 @@ function handleMessages(request, _sender, sendResponse) {
   }
 
 //
+// Content analysis throttling and caching
+const contentAnalysisThrottle = new Map(); // tabId -> timestamp
+
 // Add functions for word frequency analysis
 async function analyzePageContent(tabId) {
     if (!State.isTracking || !State.enableContentAnalysis) return null;
+
+    // Throttle analysis - don't analyze the same tab too frequently
+    const now = Date.now();
+    const lastAnalysis = contentAnalysisThrottle.get(tabId);
+    if (lastAnalysis && (now - lastAnalysis) < TIMING.CONTENT_ANALYSIS_DEBOUNCE) {
+        return null; // Skip analysis if too recent
+    }
 
     // Get tab info to check if we should analyze this domain
     try {
@@ -551,16 +768,57 @@ async function analyzePageContent(tabId) {
         // Skip analysis for non-http(s) URLs
         if (!tab.url.startsWith('http://') && !tab.url.startsWith('https://')) return null;
 
+        // Check cache first (based on URL)
+        const cacheKey = sanitizeUrl(tab.url);
+        if (State.contentAnalysisCache.has(cacheKey)) {
+            const cached = State.contentAnalysisCache.get(cacheKey);
+            // Use cached result if it's less than 1 hour old
+            if (now - cached.timestamp < 60 * 60 * 1000) {
+                return cached.result;
+            } else {
+                State.contentAnalysisCache.delete(cacheKey);
+            }
+        }
+
+        // Update throttle timestamp
+        contentAnalysisThrottle.set(tabId, now);
+
         // Inject content script to analyze the page
         const [{ result }] = await chrome.scripting.executeScript({
             target: { tabId: tabId },
             func: getWordFrequency,
             args: [Array.from(CONTENT_ANALYSIS.STOP_WORDS), DATA.TOP_WORDS_COUNT, CONTENT_ANALYSIS.MIN_WORD_LENGTH]
         });
+
+        // Cache the result
+        if (result && result.length > 0) {
+            State.contentAnalysisCache.set(cacheKey, {
+                result: result,
+                timestamp: now
+            });
+
+            // Clean cache if it gets too large
+            if (State.contentAnalysisCache.size > 1000) {
+                cleanContentAnalysisCache();
+            }
+        }
+
         return result;
     } catch (error) {
         console.error(ERROR_MESSAGES.CONTENT_ANALYSIS_FAILED, error);
         return null;
+    }
+}
+
+// Clean old entries from content analysis cache
+function cleanContentAnalysisCache() {
+    const now = Date.now();
+    const maxAge = 60 * 60 * 1000; // 1 hour
+
+    for (const [key, value] of State.contentAnalysisCache.entries()) {
+        if (now - value.timestamp > maxAge) {
+            State.contentAnalysisCache.delete(key);
+        }
     }
 }
   

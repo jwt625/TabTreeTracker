@@ -94,48 +94,61 @@ function setupEventListeners() {
   });
 }
 
-// Initialize state from background 
+// Initialize state from background
 // In popup.js, update the initializeState function:
 async function initializeState() {
   const maxRetries = 3;
   let retryCount = 0;
 
+  // Show loading state
+  elements.treeContainer.innerHTML = '<div class="loading">Loading...</div>';
+
   while (retryCount < maxRetries) {
     try {
-      // Get tree data with validation
-      console.log('Requesting tab tree...'); // For debugging
-      const treeResponse = await sendMessage('getTabTree');
-      
-      console.log('Received tree response:', treeResponse); // For debugging
-      
-      if (!treeResponse || !treeResponse.tabTree) {
-        throw new Error('Invalid or missing tree data');
-      }
-
-      updateTreeDisplay(treeResponse.tabTree);
-      
-      // Get tracking status
+      // Get tracking status first (faster)
       const trackingResponse = await sendMessage('getTrackingStatus');
       if (!trackingResponse) {
         throw new Error('Invalid tracking status response');
       }
-      
+
       updateTrackingUI(trackingResponse.isTracking);
+
+      // Lazy load tree data
+      loadTreeDataLazy();
       break;
 
     } catch (error) {
       console.error('Attempt', retryCount + 1, 'failed:', error);
       retryCount++;
-      
+
       if (retryCount === maxRetries) {
         console.error('Failed to initialize popup after', maxRetries, 'attempts');
         showError(`Failed to initialize popup: ${error.message}`);
         return;
       }
-      
+
       // Wait before retry with exponential backoff
       await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 100));
     }
+  }
+}
+
+// Lazy load tree data to improve popup responsiveness
+async function loadTreeDataLazy() {
+  try {
+    console.log('Requesting tab tree...'); // For debugging
+    const treeResponse = await sendMessage('getTabTree');
+
+    console.log('Received tree response:', treeResponse); // For debugging
+
+    if (!treeResponse || !treeResponse.tabTree) {
+      throw new Error('Invalid or missing tree data');
+    }
+
+    updateTreeDisplay(treeResponse.tabTree);
+  } catch (error) {
+    console.error('Failed to load tree data:', error);
+    elements.treeContainer.innerHTML = '<div class="error">Failed to load tree data</div>';
   }
 }
 
