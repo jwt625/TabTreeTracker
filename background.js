@@ -1,4 +1,14 @@
 // =============================================================================
+// Imports
+// =============================================================================
+import {
+  TIMING,
+  DATA,
+  ERROR_MESSAGES,
+  CONTENT_ANALYSIS
+} from './src/constants.js';
+
+// =============================================================================
 // State Management
 // =============================================================================
 const State = {
@@ -131,7 +141,7 @@ chrome.runtime.onConnect.addListener(port => {
 // Tab Management
 // =============================================================================
 const TabManager = {
-  async createNode(tab, parentId = null) {
+  async createNode(tab, _parentId = null) {
     const timestamp = Date.now();
     const node = {
       id: `${tab.id}-${timestamp}`,
@@ -190,9 +200,9 @@ const TabManager = {
   },
 
   isDuplicateNode(newNode, nodes) {
-    return nodes.some(existing => 
-      existing.url === newNode.url && 
-      Math.abs(existing.createdAt - newNode.createdAt) < 1000
+    return nodes.some(existing =>
+      existing.url === newNode.url &&
+      Math.abs(existing.createdAt - newNode.createdAt) < TIMING.DUPLICATE_NODE_THRESHOLD
     );
   },
 
@@ -265,8 +275,8 @@ const EventHandlers = {
   },
 
   async onTabUpdated(tabId, changeInfo, tab) {
-    if (!State.isTracking || State.isViewerTab(tabId) || 
-        !changeInfo.status === 'complete' || isExcluded(tab.url)) return;
+    if (!State.isTracking || State.isViewerTab(tabId) ||
+        changeInfo.status !== 'complete' || isExcluded(tab.url)) return;
     // Always update title if it has changed
     if (changeInfo.title) {
       TabManager.updateTabTitle(tab);
@@ -412,14 +422,14 @@ function updateIcon(tracking) {
           }
         });
       }
-    }, 60000); // Check every minute
+    }, TIMING.TRACKING_CHECK_INTERVAL);
   }
 
 
 // =============================================================================
 // Message Handling
 // =============================================================================
-function handleMessages(request, sender, sendResponse) {
+function handleMessages(request, _sender, sendResponse) {
     console.log('Message received:', request); // For debugging
 
     switch (request.action) {
@@ -452,11 +462,7 @@ function handleMessages(request, sender, sendResponse) {
       case 'getTrackingStatus':
         sendResponse({ isTracking: State.isTracking });
         return false; // Changed to false since we're sending synchronously
-  
-      case 'getTabTree':
-        sendResponse({ tabTree: State.tabTree });
-        break;
-  
+
       case 'clearTabTree':
         State.clearState();
         sendResponse({ success: true });
@@ -492,20 +498,21 @@ function handleMessages(request, sender, sendResponse) {
     return true; // Will respond asynchronously
   }
 
-// 
+//
 // Add functions for word frequency analysis
 async function analyzePageContent(tabId) {
-    if (!State.isTracking) return null;  // Change from isTracking to State.isTracking
-    
+    if (!State.isTracking) return null;
+
     // Inject content script to analyze the page
     try {
         const [{ result }] = await chrome.scripting.executeScript({
         target: { tabId: tabId },
         func: getWordFrequency,
+        args: [Array.from(CONTENT_ANALYSIS.STOP_WORDS), DATA.TOP_WORDS_COUNT, CONTENT_ANALYSIS.MIN_WORD_LENGTH]
         });
         return result;
     } catch (error) {
-        console.error('Error analyzing page content:', error);
+        console.error(ERROR_MESSAGES.CONTENT_ANALYSIS_FAILED, error);
         return null;
     }
     }
@@ -513,72 +520,9 @@ async function analyzePageContent(tabId) {
   
   
   // Function to be injected into the page
-  function getWordFrequency() {
-    // Comprehensive list of English stop words
-    const stopWords = new Set([
-      // Articles and basic prepositions
-      'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'by', 'for', 'with', 'about',
-      'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below',
-      'to', 'from', 'up', 'down', 'of', 'off',
-      
-      // Pronouns and their variants
-      'i', 'me', 'my', 'mine', 'myself',
-      'you', 'your', 'yours', 'yourself', 'yourselves',
-      'he', 'him', 'his', 'himself',
-      'she', 'her', 'hers', 'herself',
-      'it', 'its', 'itself',
-      'we', 'us', 'our', 'ours', 'ourselves',
-      'they', 'them', 'their', 'theirs', 'themselves',
-      'this', 'that', 'these', 'those',
-      'who', 'whom', 'whose', 'which', 'what',
-      
-      // Verbs and verb forms
-      'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-      'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing',
-      'would', 'should', 'could', 'might', 'must', 'can', 'will',
-      'shall', 'may', 'ought',
-      
-      // Common contractions
-      "i'm", "i've", "i'll", "i'd",
-      "you're", "you've", "you'll", "you'd",
-      "he's", "he'll", "he'd",
-      "she's", "she'll", "she'd",
-      "it's", "it'll", "it'd",
-      "we're", "we've", "we'll", "we'd",
-      "they're", "they've", "they'll", "they'd",
-      "that's", "that'll", "that'd",
-      "who's", "who'll", "who'd",
-      "what's", "what're", "what'll", "what'd",
-      "where's", "where'll", "where'd",
-      "when's", "when'll", "when'd",
-      "why's", "why'll", "why'd",
-      "how's", "how'll", "how'd",
-      "ain't", "isn't", "aren't", "wasn't", "weren't",
-      "hasn't", "haven't", "hadn't",
-      "doesn't", "don't", "didn't",
-      "won't", "wouldn't", "shan't", "shouldn't",
-      "can't", "cannot", "couldn't",
-      "mustn't", "mightn't",
-      
-      // Common adverbs and adjectives
-      'just', 'very', 'quite', 'rather', 'somewhat',
-      'more', 'most', 'much', 'many', 'some', 'few', 'all', 'any', 'enough',
-      'such', 'same', 'different', 'other', 'another', 'each', 'every', 'either',
-      'neither', 'several', 'both', 'else',
-      'here', 'there', 'where', 'when', 'why', 'how',
-      'again', 'ever', 'never', 'always', 'sometimes', 'often', 'usually',
-      'already', 'still', 'now', 'then', 'once', 'twice',
-      'only', 'even', 'also', 'too', 'instead', 'rather',
-      
-      // Miscellaneous common words
-      'like', 'well', 'back', 'there', 'still', 'yet', 'else', 'further',
-      'since', 'while', 'whether', 'though', 'although', 'unless',
-      'however', 'moreover', 'therefore', 'hence', 'furthermore',
-      'otherwise', 'nevertheless', 'meanwhile', 'afterward', 'afterwards',
-      'yes', 'no', 'not', 'nor', 'none', 'nothing', 'nobody',
-      'anywhere', 'everywhere', 'somewhere', 'nowhere',
-      'among', 'beside', 'besides', 'beyond', 'within', 'without'
-    ]);
+  function getWordFrequency(stopWordsArray, topWordsCount = 5, minWordLength = 3) {
+    // Convert array back to Set for performance
+    const stopWords = new Set(stopWordsArray);
   
     // Get all text content from the page
     const text = document.body.innerText;
@@ -587,8 +531,8 @@ async function analyzePageContent(tabId) {
     const words = text.toLowerCase()
       .replace(/[^a-z0-9\s]/g, '') // Remove punctuation and special characters
       .split(/\s+/) // Split on whitespace
-      .filter(word => 
-        word.length > 2 && // Skip very short words
+      .filter(word =>
+        word.length >= minWordLength && // Skip very short words
         !stopWords.has(word) && // Skip stop words
         !/^\d+$/.test(word) // Skip pure numbers
       );
@@ -599,10 +543,10 @@ async function analyzePageContent(tabId) {
       frequencyMap[word] = (frequencyMap[word] || 0) + 1;
     });
   
-    // Get top 5 words by frequency
+    // Get top words by frequency
     return Object.entries(frequencyMap)
       .sort(([,a], [,b]) => b - a)
-      .slice(0, 5)
+      .slice(0, topWordsCount)
       .map(([word, count]) => ({ word, count }));
   }
   

@@ -240,8 +240,58 @@ function getTimestamp() {
 
 // Show error message
 function showError(message) {
-  // You can implement a more sophisticated error display
-  alert(message);
+  // Create error notification element
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'error-notification';
+  errorDiv.style.cssText = `
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: #f44336;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 1000;
+    max-width: 300px;
+    font-size: 14px;
+    animation: slideIn 0.3s ease-out;
+  `;
+  errorDiv.textContent = message;
+
+  // Add close button
+  const closeBtn = document.createElement('span');
+  closeBtn.innerHTML = '&times;';
+  closeBtn.style.cssText = `
+    float: right;
+    margin-left: 10px;
+    cursor: pointer;
+    font-weight: bold;
+  `;
+  closeBtn.onclick = () => errorDiv.remove();
+  errorDiv.appendChild(closeBtn);
+
+  document.body.appendChild(errorDiv);
+
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    if (errorDiv.parentNode) {
+      errorDiv.remove();
+    }
+  }, 5000);
+}
+
+// Add CSS animation for error notifications
+if (!document.getElementById('error-styles')) {
+  const style = document.createElement('style');
+  style.id = 'error-styles';
+  style.textContent = `
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  `;
+  document.head.appendChild(style);
 }
 
 // In popup.js, add this function after the other functions
