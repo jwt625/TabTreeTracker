@@ -6,13 +6,23 @@ A powerful Chrome extension that visualizes your browser tab navigation history 
 
 ## ✨ Features
 
-### 🌲 Advanced Tree Visualization
-- **Real-time tracking** of tab relationships and navigation paths
-- **Interactive D3.js visualization** with smooth animations
-- **Multiple layout options** (vertical/horizontal)
+### 🌲 Dual Visualization Modes
+- **Tree View**: Traditional hierarchical visualization showing parent-child tab relationships
+- **Cluster View**: Force-directed layout grouping tabs by domain with intelligent clustering
+- **Seamless switching** between visualization modes with smooth transitions
+- **Interactive D3.js visualization** with smooth animations and transitions
+- **Multiple layout options** (vertical/horizontal for tree view)
 - **Advanced zoom controls** with mouse wheel and keyboard shortcuts
 - **Node interactions** - click to open URLs, hover for details
 - **Responsive design** that works on all screen sizes
+
+### 🎯 Smart Domain Clustering
+- **Automatic domain grouping** with intelligent subdomain handling
+- **Visual domain boundaries** with customizable cluster strength
+- **Force-directed layout** for natural node positioning
+- **Domain-based color coding** for easy visual identification
+- **Connection mapping** between different domains
+- **Enhanced node collection** with domain metadata
 
 ### 📊 Smart Tab Tracking
 - **Parent-child relationships** between tabs automatically detected
@@ -80,11 +90,35 @@ A powerful Chrome extension that visualizes your browser tab navigation history 
 - **❓ Help**: Show the interactive tutorial
 
 ### 🖥️ Viewer Features
+- **Dual View Modes**: Toggle between Tree and Cluster visualizations
 - **Mouse Controls**: Wheel to zoom, drag to pan
-- **Node Interaction**: Click nodes to open URLs
-- **Layout Toggle**: Switch between vertical/horizontal
+- **Node Interaction**: Click nodes to open URLs, hover for details
+- **Layout Toggle**: Switch between vertical/horizontal (tree view)
+- **Cluster Controls**: Adjust clustering strength and domain boundaries
 - **Save/Load**: Direct export/import from viewer
 - **Keyboard Shortcuts**: Full keyboard navigation support
+- **Smooth Transitions**: Animated switching between visualization modes
+
+### 🎯 Cluster View Features
+The cluster view provides a revolutionary way to visualize your browsing patterns:
+
+#### Domain-Based Organization
+- **Automatic Grouping**: Tabs are automatically grouped by their domain
+- **Visual Boundaries**: Optional domain boundaries show cluster regions
+- **Color Coding**: Each domain gets a unique color for easy identification
+- **Subdomain Handling**: Intelligent grouping of related subdomains
+
+#### Force-Directed Layout
+- **Natural Positioning**: Nodes arrange themselves based on relationships
+- **Adjustable Clustering**: Control how tightly domains cluster together
+- **Dynamic Simulation**: Real-time physics simulation for smooth movement
+- **Connection Visualization**: See relationships between different domains
+
+#### Interactive Controls
+- **Cluster Strength**: Adjust how tightly nodes cluster by domain
+- **Domain Boundaries**: Toggle visual boundaries around domain groups
+- **Layout Options**: Fine-tune the force simulation parameters
+- **Real-time Updates**: Changes apply immediately with smooth animations
 
 ### ⌨️ Keyboard Shortcuts
 
@@ -96,8 +130,9 @@ A powerful Chrome extension that visualizes your browser tab navigation history 
 - `Shift+C` - Clear tree
 
 #### Viewer Shortcuts
+- `🔄 View Mode` - Toggle between Tree and Cluster views
 - `T` - Toggle text display
-- `L` - Toggle layout
+- `L` - Toggle layout (tree view only)
 - `+` / `-` - Zoom in/out
 - `0` - Reset zoom
 - `Ctrl+S` - Save tree
@@ -176,7 +211,9 @@ Set your preferred timezone for accurate timestamp display.
 
 ### Architecture
 - **Background Service Worker**: Handles tab tracking and data management
-- **D3.js Visualization**: Interactive tree rendering with animations
+- **Dual Visualization Engine**: Tree and cluster views with seamless switching
+- **D3.js Visualization**: Interactive rendering with smooth animations and transitions
+- **Domain Clustering System**: Intelligent grouping and force-directed layouts
 - **Chrome Storage API**: Local data persistence with automatic cleanup
 - **Content Scripts**: Optional page analysis with user consent
 - **Modern ES6+**: Clean, maintainable codebase with proper error handling
@@ -226,18 +263,31 @@ Set your preferred timezone for accurate timestamp display.
 TabTreeTracker/
 ├── manifest.json              # Extension manifest (Manifest V3)
 ├── background.js              # Service worker with tab tracking
-├── src/
-│   └── constants.js           # Centralized configuration
+├── src/                       # Core utilities and domain clustering
+│   ├── constants.js           # Centralized configuration
+│   ├── domain-utils.js        # Domain extraction and grouping
+│   ├── connection-mapper.js   # Inter-domain connection mapping
+│   └── enhanced-node.js       # Enhanced node data structures
 ├── popup/                     # Modern popup interface
 │   ├── popup.html            # Responsive design with tutorial
 │   └── popup.js              # Enhanced functionality
-├── viewer/                    # Interactive tree viewer
+├── viewer/                    # Interactive dual-mode viewer
 │   ├── viewer.html           # Full-screen visualization
-│   ├── viewer.js             # D3.js integration
-│   └── components/           # Modular components
+│   ├── viewer.js             # Dual visualization controller
+│   └── components/           # Modular visualization components
+│       ├── tree.js           # Traditional tree visualization
+│       ├── cluster-visualizer.js    # Force-directed cluster view
+│       ├── cluster-controls.js      # Cluster-specific controls
+│       ├── cluster-boundaries.js    # Domain boundary rendering
+│       ├── view-mode-controller.js  # Mode switching logic
+│       └── controls.js       # Shared control components
 ├── options.html              # Configuration page
 ├── options.js                # Settings management
-├── docs/                     # Documentation
+├── docs/                     # Comprehensive documentation
+│   ├── 000-improvement-plan.md
+│   ├── 002-domain-clustering-proposal.md
+│   └── 003-view-mode-switching-guide.md
+├── test/                     # Testing infrastructure
 └── README.md                 # This file
 ```
 
@@ -247,14 +297,33 @@ TabTreeTracker/
 ```bash
 git clone https://github.com/jwt625/TabTreeTracker.git
 cd TabTreeTracker
+
+# Install development dependencies
+pnpm install
+
+# Run tests
+pnpm test
+
+# Run linting
+pnpm lint
+
 # Load unpacked extension in Chrome
 ```
+
+### Development Tools
+- **pnpm**: Fast, efficient package manager
+- **ESLint**: Code linting with modern JavaScript standards
+- **Prettier**: Code formatting for consistency
+- **Vitest**: Fast unit testing framework
+- **TypeScript**: Type checking for better code quality
 
 ### Code Quality
 - **ES6+ JavaScript** with modern async/await patterns
 - **Comprehensive error handling** with user-friendly messages
 - **Performance optimizations** with debouncing and caching
 - **Accessibility features** with ARIA labels and keyboard navigation
+- **Modular architecture** with clear separation of concerns
+- **Comprehensive testing** with unit and integration tests
 
 ## 🤝 Contributing
 
