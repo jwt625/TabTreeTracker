@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Syntax Check for Domain Clustering</title>
+  <script src="../libs/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .test-result {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+  </style>
+</head>
+<body>
+  <h1>Domain Clustering Syntax Check</h1>
+  <div id="results"></div>
+
+  <script type="module">
+    const results = document.getElementById('results');
+
+    function addResult(message, type = 'info') {
+      const div = document.createElement('div');
+      div.className = `test-result ${type}`;
+      div.textContent = message;
+      results.appendChild(div);
+    }
+
+    // Test 1: Check if D3 is available
+    try {
+      if (typeof d3 !== 'undefined') {
+        addResult('✅ D3.js loaded successfully', 'success');
+      } else {
+        addResult('❌ D3.js not available', 'error');
+      }
+    } catch (error) {
+      addResult(`❌ D3.js error: ${error.message}`, 'error');
+    }
+
+    // Test 2: Try to import domain-utils
+    try {
+      addResult('🔄 Testing domain-utils import...', 'info');
+      const domainUtils = await import('../src/domain-utils.js');
+      addResult('✅ domain-utils.js imported successfully', 'success');
+      
+      // Test a function
+      const testDomain = domainUtils.extractDomain('https://github.com/user/repo');
+      addResult(`✅ extractDomain test: ${testDomain}`, 'success');
+    } catch (error) {
+      addResult(`❌ domain-utils import error: ${error.message}`, 'error');
+      console.error('Domain utils error:', error);
+    }
+
+    // Test 3: Try to import connection-mapper
+    try {
+      addResult('🔄 Testing connection-mapper import...', 'info');
+      const connectionMapper = await import('../src/connection-mapper.js');
+      addResult('✅ connection-mapper.js imported successfully', 'success');
+    } catch (error) {
+      addResult(`❌ connection-mapper import error: ${error.message}`, 'error');
+      console.error('Connection mapper error:', error);
+    }
+
+    // Test 4: Try to import enhanced-node
+    try {
+      addResult('🔄 Testing enhanced-node import...', 'info');
+      const enhancedNode = await import('../src/enhanced-node.js');
+      addResult('✅ enhanced-node.js imported successfully', 'success');
+    } catch (error) {
+      addResult(`❌ enhanced-node import error: ${error.message}`, 'error');
+      console.error('Enhanced node error:', error);
+    }
+
+    // Test 5: Try to import cluster-boundaries
+    try {
+      addResult('🔄 Testing cluster-boundaries import...', 'info');
+      const clusterBoundaries = await import('../viewer/components/cluster-boundaries.js');
+      addResult('✅ cluster-boundaries.js imported successfully', 'success');
+    } catch (error) {
+      addResult(`❌ cluster-boundaries import error: ${error.message}`, 'error');
+      console.error('Cluster boundaries error:', error);
+    }
+
+    // Test 6: Try to import cluster-visualizer (this is where the error occurs)
+    try {
+      addResult('🔄 Testing cluster-visualizer import...', 'info');
+      const clusterVisualizer = await import('../viewer/components/cluster-visualizer.js');
+      addResult('✅ cluster-visualizer.js imported successfully', 'success');
+    } catch (error) {
+      addResult(`❌ cluster-visualizer import error: ${error.message}`, 'error');
+      console.error('Cluster visualizer error:', error);
+    }
+
+    // Test 7: Try to import tree visualizer
+    try {
+      addResult('🔄 Testing tree visualizer import...', 'info');
+      const treeVisualizer = await import('../viewer/components/tree.js');
+      addResult('✅ tree.js imported successfully', 'success');
+    } catch (error) {
+      addResult(`❌ tree.js import error: ${error.message}`, 'error');
+      console.error('Tree visualizer error:', error);
+    }
+
+    // Test 8: Try to import view-mode-controller
+    try {
+      addResult('🔄 Testing view-mode-controller import...', 'info');
+      const viewModeController = await import('../viewer/components/view-mode-controller.js');
+      addResult('✅ view-mode-controller.js imported successfully', 'success');
+    } catch (error) {
+      addResult(`❌ view-mode-controller import error: ${error.message}`, 'error');
+      console.error('View mode controller error:', error);
+    }
+
+    // Test 9: Try to import cluster-controls
+    try {
+      addResult('🔄 Testing cluster-controls import...', 'info');
+      const clusterControls = await import('../viewer/components/cluster-controls.js');
+      addResult('✅ cluster-controls.js imported successfully', 'success');
+    } catch (error) {
+      addResult(`❌ cluster-controls import error: ${error.message}`, 'error');
+      console.error('Cluster controls error:', error);
+    }
+
+    addResult('🏁 Syntax check complete. Check console for detailed errors.', 'info');
+  </script>
+</body>
+</html>

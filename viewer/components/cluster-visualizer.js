@@ -340,12 +340,14 @@ export class ClusterVisualizer {
         d.fy = null;
       });
 
+    const self = this; // Capture 'this' context
+
     return function(selection) {
       selection.call(drag)
         .on('mouseover', (event, d) => {
           // Highlight domain
-          if (this.boundaryManager) {
-            this.boundaryManager.highlightDomain(d.domain);
+          if (self.boundaryManager) {
+            self.boundaryManager.highlightDomain(d.domain);
           }
 
           // Enlarge node
@@ -355,12 +357,12 @@ export class ClusterVisualizer {
             .attr('r', 12);
 
           // Show tooltip (if implemented)
-          this.showNodeTooltip(event, d);
-        }.bind(this))
+          self.showNodeTooltip(event, d);
+        })
         .on('mouseout', (event, d) => {
           // Clear domain highlight
-          if (this.boundaryManager) {
-            this.boundaryManager.clearHighlights();
+          if (self.boundaryManager) {
+            self.boundaryManager.clearHighlights();
           }
 
           // Reset node size
@@ -370,15 +372,15 @@ export class ClusterVisualizer {
             .attr('r', 8);
 
           // Hide tooltip
-          this.hideNodeTooltip();
-        }.bind(this))
+          self.hideNodeTooltip();
+        })
         .on('click', (event, d) => {
           // Handle node click (e.g., open URL)
           if (d.url) {
             window.open(d.url, '_blank');
           }
         });
-    }.bind(this);
+    };
   }
 
   showNodeTooltip(event, d) {

@@ -2,8 +2,9 @@ import { TreeVisualizer } from './components/tree.js';
 import { ViewerControls } from './components/controls.js';
 import { FileLoader } from './components/file-loader.js';
 import { ZoomControls } from './components/zoom-controls.js';
-import { ViewModeController } from './components/view-mode-controller.js';
-import { ClusterControls } from './components/cluster-controls.js';
+// TODO: Re-enable after fixing syntax errors
+// import { ViewModeController } from './components/view-mode-controller.js';
+// import { ClusterControls } from './components/cluster-controls.js';
 
 class TabTreeViewer {
   constructor() {
@@ -80,31 +81,16 @@ class TabTreeViewer {
       this.controls = new ViewerControls(this);
       const { tabTree } = await this.requestData();
 
-      // Initialize new view mode controller (replaces direct TreeVisualizer)
-      this.viewModeController = new ViewModeController(
+      // For now, use legacy tree visualizer to avoid syntax errors
+      // TODO: Enable domain clustering after fixing syntax issues
+      this.treeVisualizer = new TreeVisualizer(
         document.getElementById('tree-container'),
         this.processTreeData(tabTree),
         {
-          defaultMode: this.currentViewMode,
-          onModeChange: (mode) => {
-            this.currentViewMode = mode;
-            console.log('View mode changed to:', mode);
-          },
+          layout: this.currentLayout,
           onNodeClick: this.handleNodeClick.bind(this)
         }
       );
-
-      // Initialize cluster controls
-      this.clusterControls = new ClusterControls(
-        document.getElementById('tree-container'),
-        this.viewModeController,
-        {
-          position: 'top-left'
-        }
-      );
-
-      // Keep legacy tree visualizer reference for compatibility
-      this.treeVisualizer = this.viewModeController.getCurrentVisualizer();
 
       this.setupMessageListener();
       this.showLoading(false);
