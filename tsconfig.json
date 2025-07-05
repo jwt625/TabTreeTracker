@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": false,
+    "strict": false,
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    
+    "types": ["chrome", "d3", "vitest/globals"],
+    
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@viewer/*": ["viewer/*"],
+      "@test/*": ["test/*"]
+    }
+  },
+  
+  "include": [
+    "src/**/*",
+    "viewer/**/*",
+    "test/**/*",
+    "background.js",
+    "content.js",
+    "*.config.js"
+  ],
+  
+  "exclude": [
+    "node_modules",
+    "dist",
+    "web-ext-artifacts",
+    "libs"
+  ]
+}

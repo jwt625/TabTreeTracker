@@ -6,24 +6,41 @@ export class ViewerControls {
   }
 
   setupEventListeners() {
-    
+    // New: View mode toggle button
+    document.getElementById('toggleViewMode')?.addEventListener('click', () => {
+      this.viewer.toggleViewMode();
+      this.updateViewModeButton();
+    });
+
     document.getElementById('decreaseNodes')?.addEventListener('click', () => {
-      this.viewer.treeVisualizer.updateNodeSize(-this.viewer.treeVisualizer.options.nodeSizeStep);
+      const currentVisualizer = this.viewer.viewModeController?.getCurrentVisualizer() || this.viewer.treeVisualizer;
+      if (currentVisualizer && currentVisualizer.updateNodeSize) {
+        currentVisualizer.updateNodeSize(-currentVisualizer.options.nodeSizeStep);
+      }
     });
 
     document.getElementById('resetNodes')?.addEventListener('click', () => {
-      this.viewer.treeVisualizer.resetNodeSize();
+      const currentVisualizer = this.viewer.viewModeController?.getCurrentVisualizer() || this.viewer.treeVisualizer;
+      if (currentVisualizer && currentVisualizer.resetNodeSize) {
+        currentVisualizer.resetNodeSize();
+      }
     });
 
     document.getElementById('increaseNodes')?.addEventListener('click', () => {
-      this.viewer.treeVisualizer.updateNodeSize(this.viewer.treeVisualizer.options.nodeSizeStep);
+      const currentVisualizer = this.viewer.viewModeController?.getCurrentVisualizer() || this.viewer.treeVisualizer;
+      if (currentVisualizer && currentVisualizer.updateNodeSize) {
+        currentVisualizer.updateNodeSize(currentVisualizer.options.nodeSizeStep);
+      }
     });
 
     document.getElementById('toggleText')?.addEventListener('click', () => {
-      this.viewer.treeVisualizer.toggleTextVisibility();
-      const button = document.getElementById('toggleText');
-      if (button) {
-        button.textContent = `${this.viewer.treeVisualizer.options.showText ? 'Hide' : 'Show'} Text (T)`;
+      const currentVisualizer = this.viewer.viewModeController?.getCurrentVisualizer() || this.viewer.treeVisualizer;
+      if (currentVisualizer && currentVisualizer.toggleTextVisibility) {
+        currentVisualizer.toggleTextVisibility();
+        const button = document.getElementById('toggleText');
+        if (button) {
+          button.textContent = `${currentVisualizer.options.showText ? 'Hide' : 'Show'} Text (T)`;
+        }
       }
     });
     // Toggle layout button
@@ -236,6 +253,17 @@ export class ViewerControls {
       console.warn('Could not get extension version:', error);
     }
     return 'unknown';
+  }
+
+  // New method: Update view mode button text
+  updateViewModeButton() {
+    const button = document.getElementById('toggleViewMode');
+    if (button && this.viewer.getCurrentViewMode) {
+      const currentMode = this.viewer.getCurrentViewMode();
+      const nextMode = currentMode === 'tree' ? 'cluster' : 'tree';
+      button.textContent = `🔄 ${nextMode.charAt(0).toUpperCase() + nextMode.slice(1)} View`;
+      button.title = `Switch to ${nextMode} view`;
+    }
   }
 
   handleZoom(action) {

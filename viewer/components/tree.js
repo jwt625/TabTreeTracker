@@ -241,7 +241,7 @@ export class TreeVisualizer {
   }
 
   render(isZoomUpdate = false) {
-    console.log('Render called.')
+    console.log('Render called.');
     const isVertical = this.options.layout === 'vertical';
     const margin = { top: 50, right: 50, bottom: 50, left: 50 };
     
@@ -254,6 +254,12 @@ export class TreeVisualizer {
       .separation((a, b) => {
         return (a.parent === b.parent ? 1.5 : 2) / Math.min(this.axisScales.x, this.axisScales.y);
       });
+
+    // Safety check for data
+    if (!this.data) {
+      console.warn('TreeVisualizer: No data available for rendering');
+      return;
+    }
 
     const root = d3.hierarchy(this.data);
     const treeData = this.treeLayout(root);
@@ -297,7 +303,7 @@ export class TreeVisualizer {
           x: d.source.x0 || d.source.x || 0,
           y: d.source.y0 || d.source.y || 0
         };
-        return linkGenerator({source: o, target: o});
+        return linkGenerator({ source: o, target: o });
       });
 
     links.merge(linksEnter)
@@ -462,7 +468,7 @@ export class TreeVisualizer {
       .attr('stroke-width', 2 / scale);
 
     this.zoomLevel = scale;
-}
+  }
 
   // Your existing helper methods remain the same
   wrapText(text) {
@@ -532,6 +538,28 @@ export class TreeVisualizer {
           break;
       }
     });
+  }
+
+  /**
+   * Destroy the visualizer and cleanup resources
+   */
+  destroy() {
+    // Stop all ongoing transitions
+    if (this.svg) {
+      this.svg.selectAll('*').interrupt();
+    }
+
+    // Clear the container
+    if (this.container) {
+      this.container.innerHTML = '';
+    }
+
+    // Clear references
+    this.svg = null;
+    this.nodesGroup = null;
+    this.linksGroup = null;
+    this.zoom = null;
+    this.data = null;
   }
 
 }

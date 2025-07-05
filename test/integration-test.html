@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Domain Clustering Integration Test</title>
+  <script src="../libs/d3.v7.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+    }
+
+    #test-container {
+      width: 100%;
+      height: 600px;
+      background-color: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .test-results {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-pass {
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    .test-fail {
+      color: #dc3545;
+      font-weight: bold;
+    }
+
+    .test-info {
+      color: #17a2b8;
+    }
+
+    button {
+      padding: 8px 16px;
+      margin: 5px;
+      border: none;
+      border-radius: 4px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .cluster-controls {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid #ddd;
+    }
+
+    .cluster-boundary .boundary-fill {
+      pointer-events: none;
+    }
+
+    .node circle {
+      cursor: pointer;
+    }
+
+    .link {
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Domain Clustering Integration Test</h1>
+  
+  <div class="test-results" id="test-results">
+    <h3>Test Results</h3>
+    <div id="results-content">Running tests...</div>
+  </div>
+
+  <div>
+    <button onclick="runDataStructureTests()">Test Data Structures</button>
+    <button onclick="testTreeVisualization()">Test Tree View</button>
+    <button onclick="testClusterVisualization()">Test Cluster View</button>
+    <button onclick="testModeSwitch()">Test Mode Switch</button>
+    <button onclick="clearVisualization()">Clear</button>
+  </div>
+
+  <div id="test-container"></div>
+
+  <script type="module">
+    // Import our modules
+    import { runAllTests, sampleTabTree } from './domain-clustering-test.js';
+    import { ViewModeController } from '../viewer/components/view-mode-controller.js';
+    import { ClusterControls } from '../viewer/components/cluster-controls.js';
+
+    // Global variables for testing
+    window.viewController = null;
+    window.clusterControls = null;
+    window.testData = sampleTabTree;
+
+    // Test functions
+    window.runDataStructureTests = function() {
+      const resultsDiv = document.getElementById('results-content');
+      resultsDiv.innerHTML = '<div class="test-info">Running data structure tests...</div>';
+      
+      try {
+        const success = runAllTests();
+        if (success) {
+          resultsDiv.innerHTML = '<div class="test-pass">✅ All data structure tests passed!</div>';
+        } else {
+          resultsDiv.innerHTML = '<div class="test-fail">❌ Some data structure tests failed. Check console for details.</div>';
+        }
+      } catch (error) {
+        resultsDiv.innerHTML = `<div class="test-fail">❌ Data structure tests failed: ${error.message}</div>`;
+        console.error('Data structure test error:', error);
+      }
+    };
+
+    window.testTreeVisualization = function() {
+      const container = document.getElementById('test-container');
+      const resultsDiv = document.getElementById('results-content');
+      
+      try {
+        // Clear existing visualization
+        container.innerHTML = '';
+        
+        // Create view controller in tree mode
+        window.viewController = new ViewModeController(container, window.testData, {
+          defaultMode: 'tree',
+          onModeChange: (mode) => {
+            console.log('Mode changed to:', mode);
+          }
+        });
+
+        // Create controls
+        window.clusterControls = new ClusterControls(container, window.viewController);
+
+        resultsDiv.innerHTML = '<div class="test-pass">✅ Tree visualization created successfully!</div>';
+      } catch (error) {
+        resultsDiv.innerHTML = `<div class="test-fail">❌ Tree visualization failed: ${error.message}</div>`;
+        console.error('Tree visualization error:', error);
+      }
+    };
+
+    window.testClusterVisualization = function() {
+      const container = document.getElementById('test-container');
+      const resultsDiv = document.getElementById('results-content');
+      
+      try {
+        // Clear existing visualization
+        container.innerHTML = '';
+        
+        // Create view controller in cluster mode
+        window.viewController = new ViewModeController(container, window.testData, {
+          defaultMode: 'cluster',
+          onModeChange: (mode) => {
+            console.log('Mode changed to:', mode);
+          }
+        });
+
+        // Create controls
+        window.clusterControls = new ClusterControls(container, window.viewController);
+
+        resultsDiv.innerHTML = '<div class="test-pass">✅ Cluster visualization created successfully!</div>';
+      } catch (error) {
+        resultsDiv.innerHTML = `<div class="test-fail">❌ Cluster visualization failed: ${error.message}</div>`;
+        console.error('Cluster visualization error:', error);
+      }
+    };
+
+    window.testModeSwitch = function() {
+      const resultsDiv = document.getElementById('results-content');
+      
+      if (!window.viewController) {
+        resultsDiv.innerHTML = '<div class="test-fail">❌ No view controller available. Create a visualization first.</div>';
+        return;
+      }
+
+      try {
+        const currentMode = window.viewController.getCurrentMode();
+        const newMode = currentMode === 'tree' ? 'cluster' : 'tree';
+        
+        window.viewController.switchMode(newMode, true);
+        
+        setTimeout(() => {
+          const actualMode = window.viewController.getCurrentMode();
+          if (actualMode === newMode) {
+            resultsDiv.innerHTML = `<div class="test-pass">✅ Mode switch successful: ${currentMode} → ${newMode}</div>`;
+          } else {
+            resultsDiv.innerHTML = `<div class="test-fail">❌ Mode switch failed: expected ${newMode}, got ${actualMode}</div>`;
+          }
+        }, 1500); // Wait for transition to complete
+        
+      } catch (error) {
+        resultsDiv.innerHTML = `<div class="test-fail">❌ Mode switch failed: ${error.message}</div>`;
+        console.error('Mode switch error:', error);
+      }
+    };
+
+    window.clearVisualization = function() {
+      const container = document.getElementById('test-container');
+      const resultsDiv = document.getElementById('results-content');
+      
+      try {
+        if (window.viewController) {
+          window.viewController.destroy();
+          window.viewController = null;
+        }
+        
+        if (window.clusterControls) {
+          window.clusterControls.destroy();
+          window.clusterControls = null;
+        }
+        
+        container.innerHTML = '';
+        resultsDiv.innerHTML = '<div class="test-info">Visualization cleared.</div>';
+      } catch (error) {
+        resultsDiv.innerHTML = `<div class="test-fail">❌ Clear failed: ${error.message}</div>`;
+        console.error('Clear error:', error);
+      }
+    };
+
+    // Auto-run data structure tests on load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        window.runDataStructureTests();
+      }, 500);
+    });
+
+    // Enhanced error handling
+    window.addEventListener('error', (event) => {
+      console.error('Global error:', event.error);
+      const resultsDiv = document.getElementById('results-content');
+      resultsDiv.innerHTML = `<div class="test-fail">❌ Global error: ${event.error.message}</div>`;
+    });
+
+    // Log successful module loading
+    console.log('✅ Integration test modules loaded successfully');
+  </script>
+
+  <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px;">
+    <h4>Test Instructions:</h4>
+    <ol>
+      <li><strong>Data Structure Tests</strong>: Validates domain extraction, grouping, and connection mapping</li>
+      <li><strong>Tree View Test</strong>: Creates traditional hierarchical tree visualization</li>
+      <li><strong>Cluster View Test</strong>: Creates domain-based cluster visualization with force simulation</li>
+      <li><strong>Mode Switch Test</strong>: Tests smooth transition between visualization modes</li>
+    </ol>
+    <p><strong>Expected Results:</strong> All tests should pass, visualizations should render correctly, and mode switching should work smoothly with animated transitions.</p>
+  </div>
+</body>
+</html>

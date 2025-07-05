@@ -1,0 +1,84 @@
+{
+  "name": "tabtreetracker",
+  "version": "1.0.0",
+  "description": "A powerful Chrome extension that visualizes browser tab navigation history as an interactive tree structure with domain clustering",
+  "type": "module",
+  "main": "background.js",
+  "scripts": {
+    "dev": "web-ext run --source-dir=. --browser-console --devtools",
+    "build": "npm run lint && npm run test && web-ext build --source-dir=. --artifacts-dir=dist",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{js,json,md,html,css}\"",
+    "format:check": "prettier --check \"**/*.{js,json,md,html,css}\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "type-check": "tsc --noEmit",
+    "validate": "npm run lint && npm run format:check && npm run type-check && npm run test",
+    "prepare": "husky install",
+    "release": "npm run validate && npm run build",
+    "clean": "rimraf dist web-ext-artifacts node_modules/.cache",
+    "analyze": "npm run build && web-ext lint --source-dir=."
+  },
+  "keywords": [
+    "chrome-extension",
+    "tab-management",
+    "visualization",
+    "d3js",
+    "browser-history",
+    "domain-clustering",
+    "tree-visualization"
+  ],
+  "author": "TabTreeTracker Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jwt625/TabTreeTracker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jwt625/TabTreeTracker/issues"
+  },
+  "homepage": "https://github.com/jwt625/TabTreeTracker#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.15.0",
+    "@types/chrome": "^0.0.270",
+    "@types/d3": "^7.4.3",
+    "@vitest/coverage-v8": "^2.1.0",
+    "@vitest/ui": "^2.1.0",
+    "eslint": "^9.15.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-jsdoc": "^50.4.3",
+    "globals": "^15.12.0",
+    "husky": "^9.1.6",
+    "jsdom": "^25.0.1",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "vitest": "^2.1.0",
+    "web-ext": "^8.3.0"
+  },
+  "dependencies": {
+    "d3": "^7.9.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@9.12.0",
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,html,css}": [
+      "prettier --write"
+    ]
+  },
+  "browserslist": [
+    "Chrome >= 88"
+  ]
+}

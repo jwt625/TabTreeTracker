@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TabTreeTracker - Domain Clustering Demo</title>
+  <script src="libs/d3.v7.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+    }
+
+    #demo-container {
+      width: 100%;
+      height: 600px;
+      background-color: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .status {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .success {
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    .error {
+      color: #dc3545;
+      font-weight: bold;
+    }
+
+    .info {
+      color: #17a2b8;
+    }
+
+    button {
+      padding: 8px 16px;
+      margin: 5px;
+      border: none;
+      border-radius: 4px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .cluster-controls {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌳 TabTreeTracker - Domain Clustering Demo</h1>
+  
+  <div class="status" id="status">
+    <div class="info">Loading domain clustering system...</div>
+  </div>
+
+  <div>
+    <button onclick="testClusterView()">🌐 Test Cluster View</button>
+    <button onclick="testTreeView()">🌳 Test Tree View</button>
+    <button onclick="toggleMode()">🔄 Toggle Mode</button>
+    <button onclick="clearDemo()">🗑️ Clear</button>
+  </div>
+
+  <div id="demo-container"></div>
+
+  <script type="module">
+    // Sample data for demo
+    const sampleData = {
+      "1-1640995200000": {
+        id: "1-1640995200000",
+        tabId: 1,
+        url: "https://github.com/user/repo",
+        title: "GitHub Repository",
+        createdAt: 1640995200000,
+        children: [
+          {
+            id: "2-1640995260000",
+            tabId: 2,
+            url: "https://github.com/user/repo/issues",
+            title: "Issues",
+            createdAt: 1640995260000,
+            children: [
+              {
+                id: "3-1640995320000",
+                tabId: 3,
+                url: "https://stackoverflow.com/questions/12345",
+                title: "Stack Overflow Question",
+                createdAt: 1640995320000,
+                children: []
+              }
+            ]
+          },
+          {
+            id: "4-1640995380000",
+            tabId: 4,
+            url: "https://docs.github.com/en/issues",
+            title: "GitHub Docs",
+            createdAt: 1640995380000,
+            children: []
+          }
+        ]
+      },
+      "5-1640995440000": {
+        id: "5-1640995440000",
+        tabId: 5,
+        url: "https://www.google.com/search?q=javascript",
+        title: "Google Search",
+        createdAt: 1640995440000,
+        children: [
+          {
+            id: "6-1640995500000",
+            tabId: 6,
+            url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
+            title: "MDN JavaScript",
+            createdAt: 1640995500000,
+            children: []
+          }
+        ]
+      }
+    };
+
+    // Global variables
+    window.viewController = null;
+    window.clusterControls = null;
+
+    // Status update function
+    function updateStatus(message, type = 'info') {
+      const statusDiv = document.getElementById('status');
+      statusDiv.innerHTML = `<div class="${type}">${message}</div>`;
+    }
+
+    // Test functions
+    window.testClusterView = async function() {
+      try {
+        updateStatus('🔄 Loading cluster view...', 'info');
+        
+        const container = document.getElementById('demo-container');
+        container.innerHTML = '';
+        
+        // Import modules dynamically
+        const { ViewModeController } = await import('./viewer/components/view-mode-controller.js');
+        const { ClusterControls } = await import('./viewer/components/cluster-controls.js');
+        
+        // Create view controller in cluster mode
+        window.viewController = new ViewModeController(container, sampleData, {
+          defaultMode: 'cluster',
+          onModeChange: (mode) => {
+            updateStatus(`✅ Switched to ${mode} mode`, 'success');
+          }
+        });
+
+        // Create controls
+        window.clusterControls = new ClusterControls(container, window.viewController);
+
+        updateStatus('✅ Cluster view loaded successfully!', 'success');
+      } catch (error) {
+        updateStatus(`❌ Failed to load cluster view: ${error.message}`, 'error');
+        console.error('Cluster view error:', error);
+      }
+    };
+
+    window.testTreeView = async function() {
+      try {
+        updateStatus('🔄 Loading tree view...', 'info');
+        
+        const container = document.getElementById('demo-container');
+        container.innerHTML = '';
+        
+        // Import modules dynamically
+        const { ViewModeController } = await import('./viewer/components/view-mode-controller.js');
+        const { ClusterControls } = await import('./viewer/components/cluster-controls.js');
+        
+        // Create view controller in tree mode
+        window.viewController = new ViewModeController(container, sampleData, {
+          defaultMode: 'tree',
+          onModeChange: (mode) => {
+            updateStatus(`✅ Switched to ${mode} mode`, 'success');
+          }
+        });
+
+        // Create controls
+        window.clusterControls = new ClusterControls(container, window.viewController);
+
+        updateStatus('✅ Tree view loaded successfully!', 'success');
+      } catch (error) {
+        updateStatus(`❌ Failed to load tree view: ${error.message}`, 'error');
+        console.error('Tree view error:', error);
+      }
+    };
+
+    window.toggleMode = function() {
+      if (!window.viewController) {
+        updateStatus('❌ No view controller available. Load a view first.', 'error');
+        return;
+      }
+
+      try {
+        const currentMode = window.viewController.getCurrentMode();
+        const newMode = currentMode === 'tree' ? 'cluster' : 'tree';
+        
+        updateStatus(`🔄 Switching from ${currentMode} to ${newMode}...`, 'info');
+        window.viewController.switchMode(newMode, true);
+        
+      } catch (error) {
+        updateStatus(`❌ Mode switch failed: ${error.message}`, 'error');
+        console.error('Mode switch error:', error);
+      }
+    };
+
+    window.clearDemo = function() {
+      try {
+        if (window.viewController) {
+          window.viewController.destroy();
+          window.viewController = null;
+        }
+        
+        if (window.clusterControls) {
+          window.clusterControls.destroy();
+          window.clusterControls = null;
+        }
+        
+        document.getElementById('demo-container').innerHTML = '';
+        updateStatus('🗑️ Demo cleared', 'info');
+      } catch (error) {
+        updateStatus(`❌ Clear failed: ${error.message}`, 'error');
+        console.error('Clear error:', error);
+      }
+    };
+
+    // Auto-load cluster view on page load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        window.testClusterView();
+      }, 500);
+    });
+
+    // Enhanced error handling
+    window.addEventListener('error', (event) => {
+      console.error('Global error:', event.error);
+      updateStatus(`❌ Error: ${event.error.message}`, 'error');
+    });
+
+    updateStatus('✅ Demo page loaded successfully', 'success');
+  </script>
+
+  <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px;">
+    <h4>🎯 Demo Features:</h4>
+    <ul>
+      <li><strong>Cluster View</strong>: Domain-based clustering with force simulation</li>
+      <li><strong>Tree View</strong>: Traditional hierarchical tree structure</li>
+      <li><strong>Mode Toggle</strong>: Smooth animated transitions between views</li>
+      <li><strong>Interactive Controls</strong>: Adjust clustering parameters in real-time</li>
+    </ul>
+    <p><strong>🎉 This demonstrates the modern development setup with proper linting, testing, and module structure!</strong></p>
+  </div>
+</body>
+</html>

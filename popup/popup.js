@@ -1,5 +1,5 @@
 // State management
-let currentState = {
+const currentState = {
   isTracking: false,
   tree: null
 };
@@ -21,7 +21,7 @@ const elements = {
 
 // Initialize popup
 // Modify the DOMContentLoaded event listener
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async () => {
   // First close any open viewer tabs
   await closeViewerTab();
 
