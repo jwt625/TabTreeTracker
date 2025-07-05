@@ -1,7 +1,9 @@
 import { TreeVisualizer } from './components/tree.js';
 import { ViewerControls } from './components/controls.js';
-import { FileLoader } from './components/file-loader.js';// In viewer.js, update the imports
+import { FileLoader } from './components/file-loader.js';
 import { ZoomControls } from './components/zoom-controls.js';
+import { ViewModeController } from './components/view-mode-controller.js';
+import { ClusterControls } from './components/cluster-controls.js';
 
 class TabTreeViewer {
   constructor() {
@@ -11,6 +13,12 @@ class TabTreeViewer {
     this.isViewerTab = true;
     this.port = null;
     this.tabId = null;  // Add tabId as class property
+
+    // New: Domain clustering components
+    this.viewModeController = null; // Handles both tree and cluster views
+    this.clusterControls = null; // Cluster-specific controls
+    this.currentViewMode = 'tree'; // 'tree' or 'cluster'
+
     this.init();
   }
 
@@ -71,15 +79,32 @@ class TabTreeViewer {
 
       this.controls = new ViewerControls(this);
       const { tabTree } = await this.requestData();
-      
-      this.treeVisualizer = new TreeVisualizer(
+
+      // Initialize new view mode controller (replaces direct TreeVisualizer)
+      this.viewModeController = new ViewModeController(
         document.getElementById('tree-container'),
         this.processTreeData(tabTree),
         {
-          layout: this.currentLayout,
+          defaultMode: this.currentViewMode,
+          onModeChange: (mode) => {
+            this.currentViewMode = mode;
+            console.log('View mode changed to:', mode);
+          },
           onNodeClick: this.handleNodeClick.bind(this)
         }
       );
+
+      // Initialize cluster controls
+      this.clusterControls = new ClusterControls(
+        document.getElementById('tree-container'),
+        this.viewModeController,
+        {
+          position: 'top-left'
+        }
+      );
+
+      // Keep legacy tree visualizer reference for compatibility
+      this.treeVisualizer = this.viewModeController.getCurrentVisualizer();
 
       this.setupMessageListener();
       this.showLoading(false);
@@ -87,7 +112,7 @@ class TabTreeViewer {
       // Initialize file loader
       this.fileLoader = new FileLoader(this);
 
-      // Initialize zoom controls after tree visualizer
+      // Initialize zoom controls after visualizer
       this.zoomControls = new ZoomControls(this);
 
       // Add cleanup event listeners
@@ -143,9 +168,32 @@ class TabTreeViewer {
   }
 
   async handleTreeUpdate(newTree) {
+    if (this.viewModeController) {
+      this.viewModeController.updateData(this.processTreeData(newTree));
+    }
+    // Legacy support
     if (this.treeVisualizer) {
       this.treeVisualizer.updateData(this.processTreeData(newTree));
     }
+  }
+
+  // New method: Switch between tree and cluster views
+  switchViewMode(mode) {
+    if (this.viewModeController && ['tree', 'cluster'].includes(mode)) {
+      this.viewModeController.switchMode(mode, true); // true = animate transition
+      this.currentViewMode = mode;
+    }
+  }
+
+  // New method: Get current view mode
+  getCurrentViewMode() {
+    return this.currentViewMode;
+  }
+
+  // New method: Toggle between tree and cluster views
+  toggleViewMode() {
+    const newMode = this.currentViewMode === 'tree' ? 'cluster' : 'tree';
+    this.switchViewMode(newMode);
   }
 
   toggleLayout() {
