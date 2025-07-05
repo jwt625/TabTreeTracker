@@ -578,10 +578,10 @@ function sanitizeUrl(url) {
 }
 
 function isExcluded(url) {
-    if (!url) return true;
-    if (url.startsWith(chrome.runtime.getURL('viewer/'))) return true;
-    return State.excludedDomains.some(domain => url.includes(domain));
-  }
+  if (!url) return true;
+  if (url.startsWith(chrome.runtime.getURL('viewer/'))) return true;
+  return State.excludedDomains.some(domain => url.includes(domain));
+}
 
 function getHumanReadableTime(timestamp) {
   return new Date(timestamp).toLocaleString('en-US', {
@@ -601,185 +601,185 @@ function getHumanReadableTime(timestamp) {
 // Icon and UI Management
 // =============================================================================
 function updateIcon(tracking) {
-    const iconPath = tracking ? {
-      16: 'icons/active_16.png',
-      32: 'icons/active_32.png',
-      48: 'icons/active_48.png',
-      128: 'icons/active_128.png'
-    } : {
-      16: 'icons/inactive_16.png',
-      32: 'icons/inactive_32.png',
-      48: 'icons/inactive_48.png',
-      128: 'icons/inactive_128.png'
-    };
+  const iconPath = tracking ? {
+    16: 'icons/active_16.png',
+    32: 'icons/active_32.png',
+    48: 'icons/active_48.png',
+    128: 'icons/active_128.png'
+  } : {
+    16: 'icons/inactive_16.png',
+    32: 'icons/inactive_32.png',
+    48: 'icons/inactive_48.png',
+    128: 'icons/inactive_128.png'
+  };
     
-    chrome.action.setIcon({ path: iconPath });
-  }
+  chrome.action.setIcon({ path: iconPath });
+}
   
-  function initTrackingCheck() {
-    if (State.trackingCheckInterval) {
-      clearInterval(State.trackingCheckInterval);
-    }
-
-    State.trackingCheckInterval = setInterval(() => {
-      if (State.isTracking) {
-        chrome.storage.local.get(['isTracking'], (result) => {
-          if (result.isTracking !== State.isTracking) {
-            console.log('Tracking state mismatch detected, reinitializing...');
-            initializeExtension();
-          }
-        });
-      }
-    }, TIMING.TRACKING_CHECK_INTERVAL);
+function initTrackingCheck() {
+  if (State.trackingCheckInterval) {
+    clearInterval(State.trackingCheckInterval);
   }
 
-  // Schedule periodic cleanup using chrome.alarms
-  function schedulePeriodicCleanup() {
-    chrome.alarms.create('periodicCleanup', {
-      delayInMinutes: 60, // First cleanup in 1 hour
-      periodInMinutes: 24 * 60 // Then every 24 hours
-    });
-  }
-
-  // Perform maintenance cleanup
-  function performMaintenanceCleanup() {
-    console.log('Performing maintenance cleanup...');
-
-    // Prune old data
-    const prunedCount = State.pruneOldData();
-
-    // Clean content analysis cache
-    cleanContentAnalysisCache();
-
-    // Clean throttle map
-    const now = Date.now();
-    for (const [tabId, timestamp] of contentAnalysisThrottle.entries()) {
-      if (now - timestamp > 60 * 60 * 1000) { // 1 hour old
-        contentAnalysisThrottle.delete(tabId);
-      }
+  State.trackingCheckInterval = setInterval(() => {
+    if (State.isTracking) {
+      chrome.storage.local.get(['isTracking'], (result) => {
+        if (result.isTracking !== State.isTracking) {
+          console.log('Tracking state mismatch detected, reinitializing...');
+          initializeExtension();
+        }
+      });
     }
+  }, TIMING.TRACKING_CHECK_INTERVAL);
+}
 
-    // Update last cleanup time
-    State.lastCleanup = now;
-    chrome.storage.local.set({ lastCleanup: now });
-
-    console.log(`Maintenance cleanup completed. Pruned ${prunedCount} nodes.`);
-  }
-
-  // Listen for alarm events
-  chrome.alarms.onAlarm.addListener((alarm) => {
-    if (alarm.name === 'periodicCleanup') {
-      performMaintenanceCleanup();
-    }
+// Schedule periodic cleanup using chrome.alarms
+function schedulePeriodicCleanup() {
+  chrome.alarms.create('periodicCleanup', {
+    delayInMinutes: 60, // First cleanup in 1 hour
+    periodInMinutes: 24 * 60 // Then every 24 hours
   });
+}
+
+// Perform maintenance cleanup
+function performMaintenanceCleanup() {
+  console.log('Performing maintenance cleanup...');
+
+  // Prune old data
+  const prunedCount = State.pruneOldData();
+
+  // Clean content analysis cache
+  cleanContentAnalysisCache();
+
+  // Clean throttle map
+  const now = Date.now();
+  for (const [tabId, timestamp] of contentAnalysisThrottle.entries()) {
+    if (now - timestamp > 60 * 60 * 1000) { // 1 hour old
+      contentAnalysisThrottle.delete(tabId);
+    }
+  }
+
+  // Update last cleanup time
+  State.lastCleanup = now;
+  chrome.storage.local.set({ lastCleanup: now });
+
+  console.log(`Maintenance cleanup completed. Pruned ${prunedCount} nodes.`);
+}
+
+// Listen for alarm events
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'periodicCleanup') {
+    performMaintenanceCleanup();
+  }
+});
 
 
 // =============================================================================
 // Message Handling
 // =============================================================================
 function handleMessages(request, _sender, sendResponse) {
-    console.log('Message received:', request); // For debugging
+  console.log('Message received:', request); // For debugging
 
-    switch (request.action) {
-        case 'getTabTree':
-          sendResponse({ tabTree: State.tabTree || {} });
-          return false;
+  switch (request.action) {
+    case 'getTabTree':
+      sendResponse({ tabTree: State.tabTree || {} });
+      return false;
 
-        case 'registerViewer':
-        State.registerViewerTab(request.tabId);
-        sendResponse({ success: true });
-        return false; // Synchronous response
+    case 'registerViewer':
+      State.registerViewerTab(request.tabId);
+      sendResponse({ success: true });
+      return false; // Synchronous response
 
-        case 'unregisterViewer':
-        State.unregisterViewerTab(request.tabId);
-        sendResponse({ success: true });
-        return false; // Synchronous response
+    case 'unregisterViewer':
+      State.unregisterViewerTab(request.tabId);
+      sendResponse({ success: true });
+      return false; // Synchronous response
 
-      case 'toggleTracking':
-        State.isTracking = !State.isTracking;
-        updateIcon(State.isTracking);
-        chrome.storage.local.set({ isTracking: State.isTracking });
-        console.log('Tracking toggled:', State.isTracking);
-        sendResponse({ isTracking: State.isTracking });
-        return false;
+    case 'toggleTracking':
+      State.isTracking = !State.isTracking;
+      updateIcon(State.isTracking);
+      chrome.storage.local.set({ isTracking: State.isTracking });
+      console.log('Tracking toggled:', State.isTracking);
+      sendResponse({ isTracking: State.isTracking });
+      return false;
 
-      case 'getTrackingStatus':
-        sendResponse({ isTracking: State.isTracking });
-        return false; // Changed to false since we're sending synchronously
-      case 'clearTabTree':
-        State.clearState();
-        sendResponse({ success: true });
-        return false; // Synchronous response
+    case 'getTrackingStatus':
+      sendResponse({ isTracking: State.isTracking });
+      return false; // Changed to false since we're sending synchronously
+    case 'clearTabTree':
+      State.clearState();
+      sendResponse({ success: true });
+      return false; // Synchronous response
 
-      case 'importTabTree':
-        try {
-          if (!request.tabTree || typeof request.tabTree !== 'object') {
-            throw new Error('Invalid tree data provided');
-          }
-
-          // Clear existing data first
-          State.tabTree = {};
-          State.tabHistory = {};
-
-          // Import the new tree data
-          State.tabTree = request.tabTree;
-
-          // Rebuild tab history from tree data
-          const rebuildHistory = (node) => {
-            if (node.tabId) {
-              if (!State.tabHistory[node.tabId]) {
-                State.tabHistory[node.tabId] = [];
-              }
-              State.tabHistory[node.tabId].push(node);
-            }
-            if (node.children) {
-              node.children.forEach(rebuildHistory);
-            }
-          };
-
-          Object.values(State.tabTree).forEach(rebuildHistory);
-
-          // Save the imported data
-          State.saveState();
-
-          console.log('Successfully imported tree data');
-          sendResponse({ success: true });
-        } catch (error) {
-          console.error('Failed to import tree data:', error);
-          sendResponse({ error: error.message });
+    case 'importTabTree':
+      try {
+        if (!request.tabTree || typeof request.tabTree !== 'object') {
+          throw new Error('Invalid tree data provided');
         }
-        return false; // Synchronous response
 
-      case 'updateConfig':
-        chrome.storage.local.set({ config: request.config })
-          .then(() => {
-            State.excludedDomains = request.config.excludedDomains || [];
-            State.enableContentAnalysis = request.config.enableContentAnalysis || false;
-            sendResponse({ success: true });
-          })
-          .catch(error => {
-            console.error('Error updating config:', error);
-            sendResponse({ error: error.message });
-          });
-        return true; // Asynchronous response
+        // Clear existing data first
+        State.tabTree = {};
+        State.tabHistory = {};
 
-      case 'updateTimeZone':
-        chrome.storage.local.set({ userTimeZone: request.timeZone })
-          .then(() => {
-            State.userTimeZone = request.timeZone;
-            sendResponse({ success: true });
-          })
-          .catch(error => {
-            console.error('Error updating timezone:', error);
-            sendResponse({ error: error.message });
-          });
-        return true; // Asynchronous response
+        // Import the new tree data
+        State.tabTree = request.tabTree;
 
-      default:
-        sendResponse({ error: 'Unknown action' });
-        return false; // Synchronous response for unknown actions
-    }
+        // Rebuild tab history from tree data
+        const rebuildHistory = (node) => {
+          if (node.tabId) {
+            if (!State.tabHistory[node.tabId]) {
+              State.tabHistory[node.tabId] = [];
+            }
+            State.tabHistory[node.tabId].push(node);
+          }
+          if (node.children) {
+            node.children.forEach(rebuildHistory);
+          }
+        };
+
+        Object.values(State.tabTree).forEach(rebuildHistory);
+
+        // Save the imported data
+        State.saveState();
+
+        console.log('Successfully imported tree data');
+        sendResponse({ success: true });
+      } catch (error) {
+        console.error('Failed to import tree data:', error);
+        sendResponse({ error: error.message });
+      }
+      return false; // Synchronous response
+
+    case 'updateConfig':
+      chrome.storage.local.set({ config: request.config })
+        .then(() => {
+          State.excludedDomains = request.config.excludedDomains || [];
+          State.enableContentAnalysis = request.config.enableContentAnalysis || false;
+          sendResponse({ success: true });
+        })
+        .catch(error => {
+          console.error('Error updating config:', error);
+          sendResponse({ error: error.message });
+        });
+      return true; // Asynchronous response
+
+    case 'updateTimeZone':
+      chrome.storage.local.set({ userTimeZone: request.timeZone })
+        .then(() => {
+          State.userTimeZone = request.timeZone;
+          sendResponse({ success: true });
+        })
+        .catch(error => {
+          console.error('Error updating timezone:', error);
+          sendResponse({ error: error.message });
+        });
+      return true; // Asynchronous response
+
+    default:
+      sendResponse({ error: 'Unknown action' });
+      return false; // Synchronous response for unknown actions
   }
+}
 
 //
 // Content analysis throttling and caching
@@ -787,111 +787,111 @@ const contentAnalysisThrottle = new Map(); // tabId -> timestamp
 
 // Add functions for word frequency analysis
 async function analyzePageContent(tabId) {
-    if (!State.isTracking || !State.enableContentAnalysis) return null;
+  if (!State.isTracking || !State.enableContentAnalysis) return null;
 
-    // Throttle analysis - don't analyze the same tab too frequently
-    const now = Date.now();
-    const lastAnalysis = contentAnalysisThrottle.get(tabId);
-    if (lastAnalysis && (now - lastAnalysis) < TIMING.CONTENT_ANALYSIS_DEBOUNCE) {
-        return null; // Skip analysis if too recent
+  // Throttle analysis - don't analyze the same tab too frequently
+  const now = Date.now();
+  const lastAnalysis = contentAnalysisThrottle.get(tabId);
+  if (lastAnalysis && (now - lastAnalysis) < TIMING.CONTENT_ANALYSIS_DEBOUNCE) {
+    return null; // Skip analysis if too recent
+  }
+
+  // Get tab info to check if we should analyze this domain
+  try {
+    const tab = await chrome.tabs.get(tabId);
+    if (!tab || !tab.url) return null;
+
+    // Skip analysis for excluded domains
+    if (isExcluded(tab.url)) return null;
+
+    // Skip analysis for non-http(s) URLs
+    if (!tab.url.startsWith('http://') && !tab.url.startsWith('https://')) return null;
+
+    // Check cache first (based on URL)
+    const cacheKey = sanitizeUrl(tab.url);
+    if (State.contentAnalysisCache.has(cacheKey)) {
+      const cached = State.contentAnalysisCache.get(cacheKey);
+      // Use cached result if it's less than 1 hour old
+      if (now - cached.timestamp < 60 * 60 * 1000) {
+        return cached.result;
+      } else {
+        State.contentAnalysisCache.delete(cacheKey);
+      }
     }
 
-    // Get tab info to check if we should analyze this domain
-    try {
-        const tab = await chrome.tabs.get(tabId);
-        if (!tab || !tab.url) return null;
+    // Update throttle timestamp
+    contentAnalysisThrottle.set(tabId, now);
 
-        // Skip analysis for excluded domains
-        if (isExcluded(tab.url)) return null;
+    // Inject content script to analyze the page
+    const [{ result }] = await chrome.scripting.executeScript({
+      target: { tabId: tabId },
+      func: getWordFrequency,
+      args: [Array.from(CONTENT_ANALYSIS.STOP_WORDS), DATA.TOP_WORDS_COUNT, CONTENT_ANALYSIS.MIN_WORD_LENGTH]
+    });
 
-        // Skip analysis for non-http(s) URLs
-        if (!tab.url.startsWith('http://') && !tab.url.startsWith('https://')) return null;
+    // Cache the result
+    if (result && result.length > 0) {
+      State.contentAnalysisCache.set(cacheKey, {
+        result: result,
+        timestamp: now
+      });
 
-        // Check cache first (based on URL)
-        const cacheKey = sanitizeUrl(tab.url);
-        if (State.contentAnalysisCache.has(cacheKey)) {
-            const cached = State.contentAnalysisCache.get(cacheKey);
-            // Use cached result if it's less than 1 hour old
-            if (now - cached.timestamp < 60 * 60 * 1000) {
-                return cached.result;
-            } else {
-                State.contentAnalysisCache.delete(cacheKey);
-            }
-        }
-
-        // Update throttle timestamp
-        contentAnalysisThrottle.set(tabId, now);
-
-        // Inject content script to analyze the page
-        const [{ result }] = await chrome.scripting.executeScript({
-            target: { tabId: tabId },
-            func: getWordFrequency,
-            args: [Array.from(CONTENT_ANALYSIS.STOP_WORDS), DATA.TOP_WORDS_COUNT, CONTENT_ANALYSIS.MIN_WORD_LENGTH]
-        });
-
-        // Cache the result
-        if (result && result.length > 0) {
-            State.contentAnalysisCache.set(cacheKey, {
-                result: result,
-                timestamp: now
-            });
-
-            // Clean cache if it gets too large
-            if (State.contentAnalysisCache.size > 1000) {
-                cleanContentAnalysisCache();
-            }
-        }
-
-        return result;
-    } catch (error) {
-        console.error(ERROR_MESSAGES.CONTENT_ANALYSIS_FAILED, error);
-        return null;
+      // Clean cache if it gets too large
+      if (State.contentAnalysisCache.size > 1000) {
+        cleanContentAnalysisCache();
+      }
     }
+
+    return result;
+  } catch (error) {
+    console.error(ERROR_MESSAGES.CONTENT_ANALYSIS_FAILED, error);
+    return null;
+  }
 }
 
 // Clean old entries from content analysis cache
 function cleanContentAnalysisCache() {
-    const now = Date.now();
-    const maxAge = 60 * 60 * 1000; // 1 hour
+  const now = Date.now();
+  const maxAge = 60 * 60 * 1000; // 1 hour
 
-    for (const [key, value] of State.contentAnalysisCache.entries()) {
-        if (now - value.timestamp > maxAge) {
-            State.contentAnalysisCache.delete(key);
-        }
+  for (const [key, value] of State.contentAnalysisCache.entries()) {
+    if (now - value.timestamp > maxAge) {
+      State.contentAnalysisCache.delete(key);
     }
+  }
 }
   
   
   
-  // Function to be injected into the page
-  function getWordFrequency(stopWordsArray, topWordsCount = 5, minWordLength = 3) {
-    // Convert array back to Set for performance
-    const stopWords = new Set(stopWordsArray);
+// Function to be injected into the page
+function getWordFrequency(stopWordsArray, topWordsCount = 5, minWordLength = 3) {
+  // Convert array back to Set for performance
+  const stopWords = new Set(stopWordsArray);
   
-    // Get all text content from the page
-    const text = document.body.innerText;
+  // Get all text content from the page
+  const text = document.body.innerText;
     
-    // Split into words, convert to lowercase, and filter
-    const words = text.toLowerCase()
-      .replace(/[^a-z0-9\s]/g, '') // Remove punctuation and special characters
-      .split(/\s+/) // Split on whitespace
-      .filter(word =>
-        word.length >= minWordLength && // Skip very short words
+  // Split into words, convert to lowercase, and filter
+  const words = text.toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '') // Remove punctuation and special characters
+    .split(/\s+/) // Split on whitespace
+    .filter(word =>
+      word.length >= minWordLength && // Skip very short words
         !stopWords.has(word) && // Skip stop words
         !/^\d+$/.test(word) // Skip pure numbers
-      );
+    );
   
-    // Count word frequencies
-    const frequencyMap = {};
-    words.forEach(word => {
-      frequencyMap[word] = (frequencyMap[word] || 0) + 1;
-    });
+  // Count word frequencies
+  const frequencyMap = {};
+  words.forEach(word => {
+    frequencyMap[word] = (frequencyMap[word] || 0) + 1;
+  });
   
-    // Get top words by frequency
-    return Object.entries(frequencyMap)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, topWordsCount)
-      .map(([word, count]) => ({ word, count }));
-  }
+  // Get top words by frequency
+  return Object.entries(frequencyMap)
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, topWordsCount)
+    .map(([word, count]) => ({ word, count }));
+}
   
   

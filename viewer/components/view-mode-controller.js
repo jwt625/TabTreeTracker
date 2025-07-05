@@ -69,17 +69,43 @@ export class ViewModeController {
     // Destroy current visualizer
     if (this.currentVisualizer) {
       this.saveCurrentState();
-      this.currentVisualizer.destroy();
+      this.destroyVisualizer(this.currentVisualizer);
     }
 
     // Create new visualizer
     this.createVisualizer(mode);
     this.currentMode = mode;
-    
+
     // Restore state if applicable
     this.restoreState();
 
     this.onModeChange(mode);
+  }
+
+  /**
+   * Safely destroy a visualizer
+   * @param {Object} visualizer - Visualizer to destroy
+   */
+  destroyVisualizer(visualizer) {
+    if (!visualizer) return;
+
+    try {
+      // Check if visualizer has a destroy method
+      if (typeof visualizer.destroy === 'function') {
+        visualizer.destroy();
+      } else {
+        // Fallback: clear the container
+        if (this.container) {
+          this.container.innerHTML = '';
+        }
+      }
+    } catch (error) {
+      console.warn('Error destroying visualizer:', error);
+      // Fallback: clear the container
+      if (this.container) {
+        this.container.innerHTML = '';
+      }
+    }
   }
 
   /**
@@ -98,7 +124,7 @@ export class ViewModeController {
     this.fadeOut(this.currentVisualizer, this.options.transitionDuration / 2)
       .then(() => {
         // Destroy old visualizer
-        this.currentVisualizer.destroy();
+        this.destroyVisualizer(this.currentVisualizer);
         
         // Create new visualizer
         this.createVisualizer(toMode);
@@ -270,12 +296,12 @@ export class ViewModeController {
   /**
    * Handle node click events
    * @param {Object} node - Clicked node
-   * @param {Event} event - Click event
+   * @param {Event} _event - Click event (unused)
    */
-  handleNodeClick(node, event) {
+  handleNodeClick(node, _event) {
     // Delegate to current visualizer or handle globally
     console.log('Node clicked:', node.title);
-    
+
     // Open URL if available
     if (node.url) {
       window.open(node.url, '_blank');
@@ -285,9 +311,9 @@ export class ViewModeController {
   /**
    * Handle node hover events
    * @param {Object} node - Hovered node
-   * @param {Event} event - Hover event
+   * @param {Event} _event - Hover event (unused)
    */
-  handleNodeHover(node, event) {
+  handleNodeHover(node, _event) {
     // Delegate to current visualizer or handle globally
     console.log('Node hovered:', node.title);
   }
@@ -353,17 +379,9 @@ export class ViewModeController {
    * Destroy controller and cleanup
    */
   destroy() {
-    if (this.currentVisualizer) {
-      this.currentVisualizer.destroy();
-    }
-    
-    if (this.treeVisualizer) {
-      this.treeVisualizer.destroy();
-    }
-    
-    if (this.clusterVisualizer) {
-      this.clusterVisualizer.destroy();
-    }
+    this.destroyVisualizer(this.currentVisualizer);
+    this.destroyVisualizer(this.treeVisualizer);
+    this.destroyVisualizer(this.clusterVisualizer);
 
     // Clear container
     if (this.container) {

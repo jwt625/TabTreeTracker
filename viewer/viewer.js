@@ -44,7 +44,7 @@ class TabTreeViewer {
 
       if (this.tabId && window.chrome && chrome.runtime) {
         chrome.runtime.sendMessage({ 
-          action: "unregisterViewer",
+          action: 'unregisterViewer',
           tabId: this.tabId
         });
       }
@@ -73,7 +73,7 @@ class TabTreeViewer {
 
         // Register viewer tab
         await chrome.runtime.sendMessage({ 
-          action: "registerViewer",
+          action: 'registerViewer',
           tabId: this.tabId
         });
       }
@@ -114,7 +114,7 @@ class TabTreeViewer {
 
   async requestData() {
     return new Promise((resolve) => {
-      chrome.runtime.sendMessage({ action: "getTabTree" }, response => {
+      chrome.runtime.sendMessage({ action: 'getTabTree' }, response => {
         resolve(response || { tabTree: {} });
       });
     });

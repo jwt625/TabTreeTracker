@@ -9,7 +9,7 @@ export const TIMING = {
   STORAGE_DEBOUNCE_DELAY: 500, // ms - delay for batching storage operations
   CONTENT_ANALYSIS_DEBOUNCE: 1000, // ms - delay for content analysis
   TRANSITION_DURATION: 750, // ms - D3 transition duration
-  POPUP_RETRY_DELAY_BASE: 100, // ms - base delay for exponential backoff
+  POPUP_RETRY_DELAY_BASE: 100 // ms - base delay for exponential backoff
 };
 
 // Size and Layout Constants
@@ -23,7 +23,7 @@ export const LAYOUT = {
   MAX_LINES: 2,
   ZOOM_SCALE_EXTENT: [0.01, 30],
   NODE_SEPARATION_FACTOR: 1.5,
-  DIFFERENT_PARENT_SEPARATION: 2,
+  DIFFERENT_PARENT_SEPARATION: 2
 };
 
 // Data Management Constants
@@ -33,7 +33,7 @@ export const DATA = {
   MAX_CONTENT_ANALYSIS_LENGTH: 5000, // characters
   TOP_WORDS_COUNT: 5,
   MAX_RETRY_ATTEMPTS: 3,
-  STORAGE_QUOTA_WARNING_THRESHOLD: 0.8, // 80% of quota
+  STORAGE_QUOTA_WARNING_THRESHOLD: 0.8 // 80% of quota
 };
 
 // UI Constants
@@ -42,7 +42,7 @@ export const UI = {
   TREE_CONTAINER_HEIGHT_OFFSET: 80,
   DETAILS_PANEL_MAX_WIDTH: 300,
   WORD_STATS_GRID_GAP: '4px 8px',
-  ERROR_DISPLAY_DURATION: 5000, // ms
+  ERROR_DISPLAY_DURATION: 5000 // ms
 };
 
 // Default Configuration
@@ -59,7 +59,7 @@ export const DEFAULT_CONFIG = {
   enableContentAnalysis: false, // opt-in for privacy
   enableDataEncryption: false,
   dataRetentionDays: DATA.DEFAULT_RETENTION_DAYS,
-  maxTreeSize: DATA.MAX_TREE_SIZE,
+  maxTreeSize: DATA.MAX_TREE_SIZE
 };
 
 // Error Messages
@@ -78,7 +78,7 @@ export const ERROR_MESSAGES = {
   PERMISSION_DENIED: 'Permission denied',
   TAB_ID_NOT_FOUND: 'Failed to get tab ID',
   NETWORK_ERROR: 'Network error occurred',
-  UNKNOWN_ACTION: 'Unknown action requested',
+  UNKNOWN_ACTION: 'Unknown action requested'
 };
 
 // Success Messages
@@ -89,7 +89,7 @@ export const SUCCESS_MESSAGES = {
   TREE_CLEARED: 'Tree data cleared successfully',
   CONFIG_UPDATED: 'Configuration updated successfully',
   DATA_IMPORTED: 'Data imported successfully',
-  DATA_EXPORTED: 'Data exported successfully',
+  DATA_EXPORTED: 'Data exported successfully'
 };
 
 // Storage Keys
@@ -100,7 +100,7 @@ export const STORAGE_KEYS = {
   IS_TRACKING: 'isTracking',
   LAST_CLEANUP: 'lastCleanup',
   ENCRYPTION_KEY: 'encryptionKey',
-  USER_PREFERENCES: 'userPreferences',
+  USER_PREFERENCES: 'userPreferences'
 };
 
 // Chrome Extension Specific
@@ -109,7 +109,7 @@ export const CHROME = {
   OPTIONS_URL_PATH: 'options.html',
   POPUP_URL_PATH: 'popup/popup.html',
   CONTENT_SCRIPT_TIMEOUT: 5000, // ms
-  MESSAGE_TIMEOUT: 10000, // ms
+  MESSAGE_TIMEOUT: 10000 // ms
 };
 
 // Keyboard Shortcuts
@@ -120,7 +120,7 @@ export const KEYBOARD = {
   RESET_ZOOM: 'Digit0',
   TOGGLE_LAYOUT: 'KeyL',
   SAVE_TREE: 'KeyS',
-  CLEAR_TREE: 'KeyC',
+  CLEAR_TREE: 'KeyC'
 };
 
 // Content Analysis
@@ -166,7 +166,7 @@ export const CONTENT_ANALYSIS = {
     'yes', 'no', 'not', 'nor', 'none', 'nothing', 'nobody',
     'anywhere', 'everywhere', 'somewhere', 'nowhere',
     'among', 'beside', 'besides', 'beyond', 'within', 'without'
-  ]),
+  ])
 };
 
 // Validation Patterns
@@ -174,7 +174,7 @@ export const VALIDATION = {
   DOMAIN_PATTERN: /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
   URL_PATTERN: /^https?:\/\/.+/,
   TIMEZONE_PATTERN: /^[A-Za-z_]+\/[A-Za-z_]+$/,
-  NODE_ID_PATTERN: /^\d+-\d+$/,
+  NODE_ID_PATTERN: /^\d+-\d+$/
 };
 
 // Performance Monitoring
@@ -182,7 +182,7 @@ export const PERFORMANCE = {
   SLOW_OPERATION_THRESHOLD: 1000, // ms
   MEMORY_WARNING_THRESHOLD: 100 * 1024 * 1024, // 100MB
   LARGE_TREE_THRESHOLD: 1000, // nodes
-  RENDER_BATCH_SIZE: 100, // nodes to render at once
+  RENDER_BATCH_SIZE: 100 // nodes to render at once
 };
 
 // Feature Flags
@@ -194,7 +194,7 @@ export const FEATURES = {
   ENABLE_AXIS_ZOOM: false, // TODO: implement
   ENABLE_DATA_ENCRYPTION: false, // TODO: implement
   ENABLE_PERFORMANCE_MONITORING: true,
-  ENABLE_DEBUG_LOGGING: false,
+  ENABLE_DEBUG_LOGGING: false
 };
 
 // Development/Debug Constants
@@ -202,5 +202,5 @@ export const DEBUG = {
   LOG_LEVEL: 'info', // 'debug', 'info', 'warn', 'error'
   ENABLE_CONSOLE_LOGS: true,
   ENABLE_PERFORMANCE_LOGS: false,
-  MOCK_CHROME_APIS: false, // for testing
+  MOCK_CHROME_APIS: false // for testing
 };

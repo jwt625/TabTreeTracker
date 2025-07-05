@@ -241,7 +241,7 @@ export class TreeVisualizer {
   }
 
   render(isZoomUpdate = false) {
-    console.log('Render called.')
+    console.log('Render called.');
     const isVertical = this.options.layout === 'vertical';
     const margin = { top: 50, right: 50, bottom: 50, left: 50 };
     
@@ -297,7 +297,7 @@ export class TreeVisualizer {
           x: d.source.x0 || d.source.x || 0,
           y: d.source.y0 || d.source.y || 0
         };
-        return linkGenerator({source: o, target: o});
+        return linkGenerator({ source: o, target: o });
       });
 
     links.merge(linksEnter)
@@ -462,7 +462,7 @@ export class TreeVisualizer {
       .attr('stroke-width', 2 / scale);
 
     this.zoomLevel = scale;
-}
+  }
 
   // Your existing helper methods remain the same
   wrapText(text) {

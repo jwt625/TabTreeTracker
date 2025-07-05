@@ -55,7 +55,7 @@ function save_options() {
       enableContentAnalysis: enableContentAnalysis
     },
     userTimeZone: timeZone
-  }, function() {
+  }, () => {
     if (chrome.runtime.lastError) {
       showStatus(`Save failed: ${chrome.runtime.lastError.message}`, true);
       return;
@@ -64,16 +64,16 @@ function save_options() {
     showStatus('Options saved successfully');
 
     // Send message to background script to update config and time zone
-    chrome.runtime.sendMessage({action: "updateConfig", config: {
+    chrome.runtime.sendMessage({ action: 'updateConfig', config: {
       excludedDomains: excludedDomains,
       enableContentAnalysis: enableContentAnalysis
-    }}, () => {
+    } }, () => {
       if (chrome.runtime.lastError) {
         console.error('Failed to update config:', chrome.runtime.lastError);
       }
     });
 
-    chrome.runtime.sendMessage({action: "updateTimeZone", timeZone: timeZone}, () => {
+    chrome.runtime.sendMessage({ action: 'updateTimeZone', timeZone: timeZone }, () => {
       if (chrome.runtime.lastError) {
         console.error('Failed to update timezone:', chrome.runtime.lastError);
       }
@@ -90,7 +90,7 @@ function restore_options() {
       enableContentAnalysis: false // Default to false for privacy
     },
     userTimeZone: 'UTC'
-  }, function(items) {
+  }, (items) => {
     document.getElementById('excludedDomains').value = items.config.excludedDomains.join('\n');
     document.getElementById('timeZone').value = items.userTimeZone;
     document.getElementById('enableContentAnalysis').checked = items.config.enableContentAnalysis || false;

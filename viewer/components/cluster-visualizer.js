@@ -2,8 +2,8 @@
 // Cluster Visualizer - Force-Directed Layout for Domain Clustering
 // =============================================================================
 
-import { groupNodesByDomain, calculateDomainStats } from '../../src/domain-utils.js';
-import { buildDomainConnections, analyzeConnectionPatterns } from '../../src/connection-mapper.js';
+import { groupNodesByDomain } from '../../src/domain-utils.js';
+import { buildDomainConnections } from '../../src/connection-mapper.js';
 import { createEnhancedNodeCollection } from '../../src/enhanced-node.js';
 import { ClusterBoundaryManager } from './cluster-boundaries.js';
 
@@ -374,7 +374,7 @@ export class ClusterVisualizer {
           // Hide tooltip
           self.hideNodeTooltip();
         })
-        .on('click', (event, d) => {
+        .on('click', (event, _d) => {
           // Handle node click (e.g., open URL)
           if (d.url) {
             window.open(d.url, '_blank');

@@ -277,7 +277,7 @@ export class ClusterBoundaryManager {
 
       // Update label background size
       labels.select('.label-background')
-        .each(function(d) {
+        .each(function(_d) {
           const textElement = d3.select(this.parentNode).select('.label-text').node();
           if (textElement) {
             const bbox = textElement.getBBox();
