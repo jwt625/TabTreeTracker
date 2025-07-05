@@ -1,12 +1,12 @@
-# TabTreeTracker 🌳
+# TabTreeTracker
 
-A powerful Chrome extension that visualizes your browser tab navigation history as an interactive tree structure. Track, analyze, and visualize how your browsing sessions evolve over time with advanced features for privacy, performance, and usability.
+A Chrome extension that visualizes browser tab navigation history as an interactive tree structure. Track and analyze browsing sessions with dual visualization modes, domain clustering, and advanced privacy controls.
 
 ![example-screenshot](TTT-example.png)
 
-## ✨ Features
+## Features
 
-### 🌲 Dual Visualization Modes
+### Dual Visualization Modes
 - **Tree View**: Traditional hierarchical visualization showing parent-child tab relationships
 - **Cluster View**: Force-directed layout grouping tabs by domain with intelligent clustering
 - **Seamless switching** between visualization modes with smooth transitions
@@ -16,52 +16,52 @@ A powerful Chrome extension that visualizes your browser tab navigation history 
 - **Node interactions** - click to open URLs, hover for details
 - **Responsive design** that works on all screen sizes
 
-### 🎯 Smart Domain Clustering
-- **Automatic domain grouping** with intelligent subdomain handling
-- **Visual domain boundaries** with customizable cluster strength
-- **Force-directed layout** for natural node positioning
-- **Domain-based color coding** for easy visual identification
-- **Connection mapping** between different domains
-- **Enhanced node collection** with domain metadata
+### Smart Domain Clustering
+- Automatic domain grouping with intelligent subdomain handling
+- Visual domain boundaries with customizable cluster strength
+- Force-directed layout for natural node positioning
+- Domain-based color coding for easy visual identification
+- Connection mapping between different domains
+- Enhanced node collection with domain metadata
 
-### 📊 Smart Tab Tracking
-- **Parent-child relationships** between tabs automatically detected
-- **Timestamp tracking** for tab creation and closure
-- **Content analysis** with user consent (extracts top words from pages)
-- **Complete navigation history** with detailed metadata
-- **Performance optimized** with data pruning and caching
+### Smart Tab Tracking
+- Parent-child relationships between tabs automatically detected
+- Timestamp tracking for tab creation and closure
+- Content analysis with user consent (extracts top words from pages)
+- Complete navigation history with detailed metadata
+- Performance optimized with data pruning and caching
 
-### 💾 Enhanced Data Management
-- **Save/Load functionality** with metadata and versioning
-- **Import/Export** with both new and legacy format support
-- **Configurable domain exclusions** for privacy
-- **Automatic cleanup** of old data to prevent memory issues
-- **Session management** with timezone support
-- **Data sanitization** removes sensitive URL parameters
+### Enhanced Data Management
+- Save/Load functionality with metadata and versioning
+- Import/Export with both new and legacy format support
+- Configurable domain exclusions for privacy
+- Automatic cleanup of old data to prevent memory issues
+- Session management with timezone support
+- Data sanitization removes sensitive URL parameters
 
-### 🔒 Privacy & Security
-- **User consent required** for content analysis (opt-in)
-- **Local storage only** - no data transmitted to external servers
-- **URL sanitization** removes sensitive query parameters
-- **Domain exclusion** for sensitive sites
-- **Minimal permissions** with clear documentation
+### Privacy & Security
+- User consent required for content analysis (opt-in)
+- Local storage only - no data transmitted to external servers
+- URL sanitization removes sensitive query parameters
+- Domain exclusion for sensitive sites
+- Minimal permissions with clear documentation
 
-### ⚡ Performance Optimizations
-- **Debounced storage operations** for better performance
-- **Content analysis caching** with automatic cleanup
-- **Memory management** with configurable data retention
-- **Lazy loading** for improved popup responsiveness
-- **Automatic maintenance** with scheduled cleanup tasks
+### Performance Optimizations
+- Debounced storage operations for better performance
+- Content analysis caching with automatic cleanup
+- Memory management with configurable data retention
+- Lazy loading for improved popup responsiveness
+- Automatic maintenance with scheduled cleanup tasks
 
-### ♿ Accessibility & UX
-- **Full keyboard navigation** with comprehensive shortcuts
-- **ARIA labels** and screen reader support
-- **Modern, responsive design** with glass morphism effects
-- **Interactive tutorial** for first-time users
-- **Visual feedback** with animations and loading states
-- **High contrast support** for better readability
+### Accessibility & UX
+- Full keyboard navigation with comprehensive shortcuts
+- ARIA labels and screen reader support
+- Modern, responsive design with glass morphism effects
+- Interactive tutorial for first-time users
+- Visual feedback with animations and loading states
+- High contrast support for better readability
 
-## 🚀 Installation
+## Installation
 
 ### From Source
 1. Clone this repository:
@@ -79,48 +79,48 @@ A powerful Chrome extension that visualizes your browser tab navigation history 
 3. Configure your preferences in the options page
 4. Start tracking by toggling the switch in the popup
 
-## 📖 Usage Guide
+## Usage Guide
 
-### 🎮 Popup Controls
-- **Toggle Switch**: Start/stop tab tracking
-- **💾 Save Tree**: Export your tree data with metadata
-- **📁 Load Tree**: Import previously saved tree data
-- **🗑️ Clear Tree**: Remove all current tree data
-- **🔍 Open Viewer**: Launch the full tree visualization
-- **❓ Help**: Show the interactive tutorial
+### Popup Controls
+- Toggle Switch: Start/stop tab tracking
+- Save Tree: Export your tree data with metadata
+- Load Tree: Import previously saved tree data
+- Clear Tree: Remove all current tree data
+- Open Viewer: Launch the full tree visualization
+- Help: Show the interactive tutorial
 
-### 🖥️ Viewer Features
-- **Dual View Modes**: Toggle between Tree and Cluster visualizations
-- **Mouse Controls**: Wheel to zoom, drag to pan
-- **Node Interaction**: Click nodes to open URLs, hover for details
-- **Layout Toggle**: Switch between vertical/horizontal (tree view)
-- **Cluster Controls**: Adjust clustering strength and domain boundaries
-- **Save/Load**: Direct export/import from viewer
-- **Keyboard Shortcuts**: Full keyboard navigation support
-- **Smooth Transitions**: Animated switching between visualization modes
+### Viewer Features
+- Dual View Modes: Toggle between Tree and Cluster visualizations
+- Mouse Controls: Wheel to zoom, drag to pan
+- Node Interaction: Click nodes to open URLs, hover for details
+- Layout Toggle: Switch between vertical/horizontal (tree view)
+- Cluster Controls: Adjust clustering strength and domain boundaries
+- Save/Load: Direct export/import from viewer
+- Keyboard Shortcuts: Full keyboard navigation support
+- Smooth Transitions: Animated switching between visualization modes
 
-### 🎯 Cluster View Features
+### Cluster View Features
 The cluster view provides a revolutionary way to visualize your browsing patterns:
 
 #### Domain-Based Organization
-- **Automatic Grouping**: Tabs are automatically grouped by their domain
-- **Visual Boundaries**: Optional domain boundaries show cluster regions
-- **Color Coding**: Each domain gets a unique color for easy identification
-- **Subdomain Handling**: Intelligent grouping of related subdomains
+- Automatic Grouping: Tabs are automatically grouped by their domain
+- Visual Boundaries: Optional domain boundaries show cluster regions
+- Color Coding: Each domain gets a unique color for easy identification
+- Subdomain Handling: Intelligent grouping of related subdomains
 
 #### Force-Directed Layout
-- **Natural Positioning**: Nodes arrange themselves based on relationships
-- **Adjustable Clustering**: Control how tightly domains cluster together
-- **Dynamic Simulation**: Real-time physics simulation for smooth movement
-- **Connection Visualization**: See relationships between different domains
+- Natural Positioning: Nodes arrange themselves based on relationships
+- Adjustable Clustering: Control how tightly domains cluster together
+- Dynamic Simulation: Real-time physics simulation for smooth movement
+- Connection Visualization: See relationships between different domains
 
 #### Interactive Controls
-- **Cluster Strength**: Adjust how tightly nodes cluster by domain
-- **Domain Boundaries**: Toggle visual boundaries around domain groups
-- **Layout Options**: Fine-tune the force simulation parameters
-- **Real-time Updates**: Changes apply immediately with smooth animations
+- Cluster Strength: Adjust how tightly nodes cluster by domain
+- Domain Boundaries: Toggle visual boundaries around domain groups
+- Layout Options: Fine-tune the force simulation parameters
+- Real-time Updates: Changes apply immediately with smooth animations
 
-### ⌨️ Keyboard Shortcuts
+### Keyboard Shortcuts
 
 #### Popup Shortcuts
 - `T` - Toggle tracking
@@ -130,7 +130,7 @@ The cluster view provides a revolutionary way to visualize your browsing pattern
 - `Shift+C` - Clear tree
 
 #### Viewer Shortcuts
-- `🔄 View Mode` - Toggle between Tree and Cluster views
+- View Mode Button - Toggle between Tree and Cluster views
 - `T` - Toggle text display
 - `L` - Toggle layout (tree view only)
 - `+` / `-` - Zoom in/out
@@ -139,7 +139,7 @@ The cluster view provides a revolutionary way to visualize your browsing pattern
 - `Ctrl+O` - Load tree
 - `Esc` - Reset view
 
-## ⚙️ Configuration
+## Configuration
 
 ### Options Page
 Access the options page by right-clicking the extension icon and selecting "Options".
@@ -160,17 +160,17 @@ banking-sites.com     # Financial institutions
 #### Timezone Configuration
 Set your preferred timezone for accurate timestamp display.
 
-## 🔒 Privacy & Security
+## Privacy & Security
 
 ### Data Storage
-- **Local Only**: All data stored locally on your device
-- **No Transmission**: No data sent to external servers
-- **User Control**: Complete control over what data is collected
+- Local Only: All data stored locally on your device
+- No Transmission: No data sent to external servers
+- User Control: Complete control over what data is collected
 
 ### Content Analysis
-- **Opt-in Only**: Disabled by default, requires explicit user consent
-- **Sanitized URLs**: Sensitive query parameters automatically removed
-- **Domain Filtering**: Respects excluded domains list
+- Opt-in Only: Disabled by default, requires explicit user consent
+- Sanitized URLs: Sensitive query parameters automatically removed
+- Domain Filtering: Respects excluded domains list
 
 ### Permissions Explained
 - `tabs`: Monitor tab creation and navigation
@@ -178,7 +178,7 @@ Set your preferred timezone for accurate timestamp display.
 - `activeTab`: Access current tab for content analysis (when enabled)
 - `scripting`: Inject content analysis scripts (when enabled)
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -207,23 +207,23 @@ Set your preferred timezone for accurate timestamp display.
 - Review the permissions documentation
 - Report issues on GitHub with detailed steps to reproduce
 
-## 🔧 Technical Details
+## Technical Details
 
 ### Architecture
-- **Background Service Worker**: Handles tab tracking and data management
-- **Dual Visualization Engine**: Tree and cluster views with seamless switching
-- **D3.js Visualization**: Interactive rendering with smooth animations and transitions
-- **Domain Clustering System**: Intelligent grouping and force-directed layouts
-- **Chrome Storage API**: Local data persistence with automatic cleanup
-- **Content Scripts**: Optional page analysis with user consent
-- **Modern ES6+**: Clean, maintainable codebase with proper error handling
+- Background Service Worker: Handles tab tracking and data management
+- Dual Visualization Engine: Tree and cluster views with seamless switching
+- D3.js Visualization: Interactive rendering with smooth animations and transitions
+- Domain Clustering System: Intelligent grouping and force-directed layouts
+- Chrome Storage API: Local data persistence with automatic cleanup
+- Content Scripts: Optional page analysis with user consent
+- Modern ES6+: Clean, maintainable codebase with proper error handling
 
 ### Performance Features
-- **Debounced Storage**: Batched writes to reduce I/O operations
-- **Content Caching**: Analysis results cached for 1 hour
-- **Memory Management**: Automatic cleanup of old data
-- **Lazy Loading**: Improved popup responsiveness
-- **Data Pruning**: Configurable retention periods
+- Debounced Storage: Batched writes to reduce I/O operations
+- Content Caching: Analysis results cached for 1 hour
+- Memory Management: Automatic cleanup of old data
+- Lazy Loading: Improved popup responsiveness
+- Data Pruning: Configurable retention periods
 
 ### Export Data Structure
 ```javascript
@@ -254,9 +254,9 @@ Set your preferred timezone for accurate timestamp display.
 ```
 
 ### Browser Compatibility
-- **Chrome 88+** (Manifest V3 support)
-- **Chromium-based browsers** (Edge, Brave, Opera, etc.)
-- **Modern JavaScript features** (ES6+, async/await)
+- Chrome 88+ (Manifest V3 support)
+- Chromium-based browsers (Edge, Brave, Opera, etc.)
+- Modern JavaScript features (ES6+, async/await)
 
 ### File Structure
 ```
@@ -291,7 +291,7 @@ TabTreeTracker/
 └── README.md                 # This file
 ```
 
-## 🚀 Development
+## Development
 
 ### Setup
 ```bash
@@ -311,21 +311,21 @@ pnpm lint
 ```
 
 ### Development Tools
-- **pnpm**: Fast, efficient package manager
-- **ESLint**: Code linting with modern JavaScript standards
-- **Prettier**: Code formatting for consistency
-- **Vitest**: Fast unit testing framework
-- **TypeScript**: Type checking for better code quality
+- pnpm: Fast, efficient package manager
+- ESLint: Code linting with modern JavaScript standards
+- Prettier: Code formatting for consistency
+- Vitest: Fast unit testing framework
+- TypeScript: Type checking for better code quality
 
 ### Code Quality
-- **ES6+ JavaScript** with modern async/await patterns
-- **Comprehensive error handling** with user-friendly messages
-- **Performance optimizations** with debouncing and caching
-- **Accessibility features** with ARIA labels and keyboard navigation
-- **Modular architecture** with clear separation of concerns
-- **Comprehensive testing** with unit and integration tests
+- ES6+ JavaScript with modern async/await patterns
+- Comprehensive error handling with user-friendly messages
+- Performance optimizations with debouncing and caching
+- Accessibility features with ARIA labels and keyboard navigation
+- Modular architecture with clear separation of concerns
+- Comprehensive testing with unit and integration tests
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Here's how you can help:
 
@@ -335,7 +335,7 @@ We welcome contributions! Here's how you can help:
 4. **Push to the branch** (`git push origin feature/amazing-feature`)
 5. **Open a Pull Request**
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License:
 
