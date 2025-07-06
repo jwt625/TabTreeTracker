@@ -383,11 +383,12 @@ export class ClusterVisualizer {
   }
 
   render() {
-    this.renderLinks();
-    this.renderNodes();
+    // Render boundaries first so they appear behind everything else
     if (this.options.showDomainBoundaries) {
       this.renderClusterBoundaries();
     }
+    this.renderLinks();
+    this.renderNodes(); // Render nodes last so they appear on top
   }
 
   renderLinks() {
@@ -477,12 +478,13 @@ export class ClusterVisualizer {
         }
       });
 
-    // Add labels
+    // Add labels with pointer-events: none so they don't block mouse events
     nodesEnter.append('text')
       .attr('dy', '0.35em')
       .attr('text-anchor', 'middle')
       .attr('font-size', '10px')
       .attr('fill', '#333')
+      .style('pointer-events', 'none') // Allow mouse events to pass through to circle
       .text(d => d.title ? d.title.substring(0, 10) + '...' : '');
 
     // Merge new and existing nodes and add drag functionality to groups
