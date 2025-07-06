@@ -409,6 +409,7 @@ export class ClusterVisualizer {
 
   renderNodes() {
     console.log('CLUSTER renderNodes called, nodes count:', this.nodes.length);
+    console.log('CLUSTER first few nodes:', this.nodes.slice(0, 3));
     const nodes = this.nodesGroup
       .selectAll('.node')
       .data(this.nodes);
@@ -417,18 +418,64 @@ export class ClusterVisualizer {
 
     const nodesEnter = nodes.enter()
       .append('g')
-      .attr('class', 'node')
-      .call(this.setupNodeInteractions.bind(this));
+      .attr('class', 'node');
 
     console.log('CLUSTER nodesEnter count:', nodesEnter.size());
 
-    // Add circles
+    // Log the actual DOM elements created
+    nodesEnter.each(function(d, i) {
+      console.log('CLUSTER node', i, 'data:', d.title, 'element:', this);
+    });
+
+    // Add circles with events attached directly (like tree.js)
     nodesEnter.append('circle')
       .attr('r', 8)
       .attr('fill', d => d.domainColor)
       .attr('stroke', d => d.url ? '#1a73e8' : '#fff') // Blue stroke for clickable nodes
       .attr('stroke-width', 2)
-      .style('cursor', d => d.url ? 'pointer' : 'default'); // Pointer cursor for clickable nodes
+      .style('cursor', d => d.url ? 'pointer' : 'default') // Pointer cursor for clickable nodes
+      .on('mouseover', (event, d) => {
+        console.log('CLUSTER mouseover event fired for:', d.title);
+        // Highlight domain
+        if (this.boundaryManager) {
+          this.boundaryManager.highlightDomain(d.domain);
+        }
+        // Enlarge node
+        d3.select(event.currentTarget)
+          .transition()
+          .duration(200)
+          .attr('r', 12);
+        // Show tooltip
+        this.showNodeTooltip(event, d);
+      })
+      .on('mousemove', (event, d) => {
+        // Update tooltip position as mouse moves
+        this.showNodeTooltip(event, d);
+      })
+      .on('mouseout', (event, d) => {
+        console.log('CLUSTER mouseout event fired for:', d.title);
+        // Clear domain highlight
+        if (this.boundaryManager) {
+          this.boundaryManager.clearHighlights();
+        }
+        // Reset node size
+        d3.select(event.currentTarget)
+          .transition()
+          .duration(200)
+          .attr('r', 8);
+        // Hide tooltip
+        this.hideNodeTooltip();
+      })
+      .on('click', (event, d) => {
+        console.log('CLUSTER click event fired for:', d.title, 'URL:', d.url);
+        event.stopPropagation();
+        if (d.url) {
+          console.log('CLUSTER opening URL:', d.url);
+          window.open(d.url, '_blank');
+        } else {
+          console.log('CLUSTER no URL to open');
+        }
+      });
 
     // Add labels
     nodesEnter.append('text')
@@ -438,7 +485,28 @@ export class ClusterVisualizer {
       .attr('fill', '#333')
       .text(d => d.title ? d.title.substring(0, 10) + '...' : '');
 
-    nodes.merge(nodesEnter);
+    // Merge new and existing nodes and add drag functionality to groups
+    const allNodes = nodes.merge(nodesEnter);
+    console.log('CLUSTER allNodes count after merge:', allNodes.size());
+
+    // Add drag functionality to the group elements (not the circles)
+    const drag = d3.drag()
+      .on('start', (event, d) => {
+        if (!event.active) this.simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      })
+      .on('drag', (event, d) => {
+        d.fx = event.x;
+        d.fy = event.y;
+      })
+      .on('end', (event, d) => {
+        if (!event.active) this.simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      });
+
+    allNodes.call(drag);
   }
 
   renderClusterBoundaries() {
