@@ -270,8 +270,27 @@ class TabTreeViewer {
 
   toggleLayout() {
     this.currentLayout = this.currentLayout === 'vertical' ? 'horizontal' : 'vertical';
-    if (this.treeVisualizer) {
+    console.log('toggleLayout called, new layout:', this.currentLayout);
+
+    // Use ViewModeController to get current visualizer
+    if (this.viewModeController) {
+      const currentVisualizer = this.viewModeController.getCurrentVisualizer();
+      const currentMode = this.viewModeController.getCurrentMode();
+      console.log('Current mode:', currentMode, 'Current visualizer:', currentVisualizer);
+
+      if (currentVisualizer && currentVisualizer.setLayout) {
+        console.log('Calling setLayout on current visualizer');
+        currentVisualizer.setLayout(this.currentLayout);
+      } else {
+        console.log('Current visualizer does not have setLayout method');
+      }
+    }
+    // Fallback to legacy treeVisualizer if ViewModeController not available
+    else if (this.treeVisualizer) {
+      console.log('Using legacy treeVisualizer');
       this.treeVisualizer.setLayout(this.currentLayout);
+    } else {
+      console.log('No visualizer available for layout toggle');
     }
   }
 
