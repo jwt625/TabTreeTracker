@@ -33,8 +33,14 @@ export class TreeVisualizer {
   }
 
   init() {
+    // Save cluster controls before clearing
+    const clusterControls = this.container.querySelector('.cluster-controls');
     this.container.innerHTML = '';
-    
+    // Restore cluster controls
+    if (clusterControls) {
+      this.container.appendChild(clusterControls);
+    }
+
     // Create details panel
     this.detailsPanel = d3.select(this.container)
       .append('div')
@@ -156,6 +162,7 @@ export class TreeVisualizer {
 
   // Add method to update details panel content
   updateDetailsPanel(d, event) {
+    console.log('TREE updateDetailsPanel called with:', d ? d.data.name : 'null');
     if (!d) {
       this.detailsPanel.style('display', 'none');
       return;
@@ -549,9 +556,15 @@ export class TreeVisualizer {
       this.svg.selectAll('*').interrupt();
     }
 
-    // Clear the container
+    // Clear the container but preserve cluster controls
     if (this.container) {
+      // Save cluster controls before clearing
+      const clusterControls = this.container.querySelector('.cluster-controls');
       this.container.innerHTML = '';
+      // Restore cluster controls
+      if (clusterControls) {
+        this.container.appendChild(clusterControls);
+      }
     }
 
     // Clear references

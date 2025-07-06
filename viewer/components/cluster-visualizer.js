@@ -47,12 +47,16 @@ export class ClusterVisualizer {
     this.isInitialized = false;
     this.currentZoom = d3.zoomIdentity;
 
+    // Add property for details panel (like tree view)
+    this.detailsPanel = null;
+
     this.init();
   }
 
   init() {
     this.processData();
     this.setupSVG();
+    this.initDetailsPanel(); // Create details panel after SVG setup
     this.setupSimulation();
     this.render();
     this.isInitialized = true;
@@ -132,8 +136,13 @@ export class ClusterVisualizer {
   }
 
   setupSVG() {
-    // Clear container
+    // Clear container but preserve cluster controls
+    const clusterControls = this.container.querySelector('.cluster-controls');
     this.container.innerHTML = '';
+    // Restore cluster controls
+    if (clusterControls) {
+      this.container.appendChild(clusterControls);
+    }
 
     // Create SVG
     this.svg = d3.select(this.container)
@@ -168,6 +177,123 @@ export class ClusterVisualizer {
       smoothing: true,
       showLabels: true
     });
+  }
+
+  initDetailsPanel() {
+    // Create details panel (same as tree view)
+    this.detailsPanel = d3.select(this.container)
+      .append('div')
+      .attr('class', 'node-details')
+      .style('display', 'none');
+  }
+
+  // Reuse tree view's text wrapping logic
+  wrapText(text, maxLength = 30, maxLines = 2) {
+    if (!text) return '';
+
+    const words = text.split(/\s+/);
+    const lines = [];
+    let currentLine = '';
+
+    for (const word of words) {
+      // Handle very long words
+      if (word.length > maxLength) {
+        if (currentLine) {
+          lines.push(currentLine);
+          currentLine = '';
+        }
+        if (lines.length < maxLines) {
+          lines.push(word.slice(0, maxLength - 3) + '...');
+        }
+        continue;
+      }
+
+      // Normal word processing
+      if (currentLine.length + word.length + 1 <= maxLength) {
+        currentLine += (currentLine.length === 0 ? '' : ' ') + word;
+      } else {
+        if (lines.length < maxLines) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          lines[maxLines - 1] = lines[maxLines - 1].slice(0, -3) + '...';
+          break;
+        }
+      }
+    }
+
+    if (currentLine && lines.length < maxLines) {
+      lines.push(currentLine);
+    }
+
+    return lines.join('\n');
+  }
+
+  // Reuse tree view's updateDetailsPanel logic
+  updateDetailsPanel(d, event) {
+    console.log('updateDetailsPanel called with:', d ? d.title : 'null');
+
+    if (!d) {
+      this.detailsPanel.style('display', 'none');
+      return;
+    }
+
+    // Wrap text for display
+    const wrappedTitle = this.wrapText(d.title || 'Untitled', 30, 2);
+    const wrappedUrl = this.wrapText(d.url || 'No URL', 40, 2);
+
+    // Format dates - cluster nodes have different data structure than tree nodes
+    const createdAt = d.createdAt ? new Date(d.createdAt).toLocaleString() : 'Unknown';
+    const closedAt = d.closedAt ? new Date(d.closedAt).toLocaleString() : 'Still open';
+
+    // Update content (same structure as tree view)
+    this.detailsPanel.html(`
+      <h4 class="wrapped-text">${wrappedTitle}</h4>
+
+      <div class="node-details-section">
+        <strong>URL:</strong><br>
+        <span class="wrapped-text url-text">${wrappedUrl}</span>
+      </div>
+
+      <div class="node-details-section">
+        <strong>Domain:</strong> ${d.domain || 'Unknown'}<br>
+        <strong>Created:</strong> ${createdAt}<br>
+        <strong>Closed:</strong> ${closedAt}
+      </div>
+
+      ${d.topWords ? `
+        <div class="node-details-section">
+          <strong>Top Words:</strong>
+          <div class="word-stats">
+            ${d.topWords.map(w => `
+              <div>${w.word}</div>
+              <div class="word-count">${w.count}</div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+    `);
+
+    // Position the panel near the cursor (same logic as tree view)
+    const [x, y] = d3.pointer(event, this.container);
+    const panelBox = this.detailsPanel.node().getBoundingClientRect();
+    const containerBox = this.container.getBoundingClientRect();
+
+    let left = x + 10; // 10px offset from cursor
+    let top = y + 10;
+
+    // Adjust if panel would overflow container
+    if (left + panelBox.width > containerBox.width) {
+      left = x - panelBox.width - 10;
+    }
+    if (top + panelBox.height > containerBox.height) {
+      top = y - panelBox.height - 10;
+    }
+
+    this.detailsPanel
+      .style('left', `${left}px`)
+      .style('top', `${top}px`)
+      .style('display', 'block');
   }
 
   setupSimulation() {
@@ -257,11 +383,12 @@ export class ClusterVisualizer {
   }
 
   render() {
-    this.renderLinks();
-    this.renderNodes();
+    // Render boundaries first so they appear behind everything else
     if (this.options.showDomainBoundaries) {
       this.renderClusterBoundaries();
     }
+    this.renderLinks();
+    this.renderNodes(); // Render nodes last so they appear on top
   }
 
   renderLinks() {
@@ -282,6 +409,8 @@ export class ClusterVisualizer {
   }
 
   renderNodes() {
+    console.log('CLUSTER renderNodes called, nodes count:', this.nodes.length);
+    console.log('CLUSTER first few nodes:', this.nodes.slice(0, 3));
     const nodes = this.nodesGroup
       .selectAll('.node')
       .data(this.nodes);
@@ -290,25 +419,96 @@ export class ClusterVisualizer {
 
     const nodesEnter = nodes.enter()
       .append('g')
-      .attr('class', 'node')
-      .call(this.setupNodeInteractions.bind(this));
+      .attr('class', 'node');
 
-    // Add circles
+    console.log('CLUSTER nodesEnter count:', nodesEnter.size());
+
+    // Log the actual DOM elements created
+    nodesEnter.each(function(d, i) {
+      console.log('CLUSTER node', i, 'data:', d.title, 'element:', this);
+    });
+
+    // Add circles with events attached directly (like tree.js)
     nodesEnter.append('circle')
       .attr('r', 8)
       .attr('fill', d => d.domainColor)
-      .attr('stroke', '#fff')
-      .attr('stroke-width', 2);
+      .attr('stroke', d => d.url ? '#1a73e8' : '#fff') // Blue stroke for clickable nodes
+      .attr('stroke-width', 2)
+      .style('cursor', d => d.url ? 'pointer' : 'default') // Pointer cursor for clickable nodes
+      .on('mouseover', (event, d) => {
+        console.log('CLUSTER mouseover event fired for:', d.title);
+        // Highlight domain
+        if (this.boundaryManager) {
+          this.boundaryManager.highlightDomain(d.domain);
+        }
+        // Enlarge node
+        d3.select(event.currentTarget)
+          .transition()
+          .duration(200)
+          .attr('r', 12);
+        // Show tooltip
+        this.showNodeTooltip(event, d);
+      })
+      .on('mousemove', (event, d) => {
+        // Update tooltip position as mouse moves
+        this.showNodeTooltip(event, d);
+      })
+      .on('mouseout', (event, d) => {
+        console.log('CLUSTER mouseout event fired for:', d.title);
+        // Clear domain highlight
+        if (this.boundaryManager) {
+          this.boundaryManager.clearHighlights();
+        }
+        // Reset node size
+        d3.select(event.currentTarget)
+          .transition()
+          .duration(200)
+          .attr('r', 8);
+        // Hide tooltip
+        this.hideNodeTooltip();
+      })
+      .on('click', (event, d) => {
+        console.log('CLUSTER click event fired for:', d.title, 'URL:', d.url);
+        event.stopPropagation();
+        if (d.url) {
+          console.log('CLUSTER opening URL:', d.url);
+          window.open(d.url, '_blank');
+        } else {
+          console.log('CLUSTER no URL to open');
+        }
+      });
 
-    // Add labels
+    // Add labels with pointer-events: none so they don't block mouse events
     nodesEnter.append('text')
       .attr('dy', '0.35em')
       .attr('text-anchor', 'middle')
       .attr('font-size', '10px')
       .attr('fill', '#333')
+      .style('pointer-events', 'none') // Allow mouse events to pass through to circle
       .text(d => d.title ? d.title.substring(0, 10) + '...' : '');
 
-    nodes.merge(nodesEnter);
+    // Merge new and existing nodes and add drag functionality to groups
+    const allNodes = nodes.merge(nodesEnter);
+    console.log('CLUSTER allNodes count after merge:', allNodes.size());
+
+    // Add drag functionality to the group elements (not the circles)
+    const drag = d3.drag()
+      .on('start', (event, d) => {
+        if (!event.active) this.simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      })
+      .on('drag', (event, d) => {
+        d.fx = event.x;
+        d.fy = event.y;
+      })
+      .on('end', (event, d) => {
+        if (!event.active) this.simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      });
+
+    allNodes.call(drag);
   }
 
   renderClusterBoundaries() {
@@ -324,6 +524,7 @@ export class ClusterVisualizer {
   }
 
   setupNodeInteractions() {
+    console.log('CLUSTER setupNodeInteractions called');
     const drag = d3.drag()
       .on('start', (event, d) => {
         if (!event.active) this.simulation.alphaTarget(0.3).restart();
@@ -343,8 +544,10 @@ export class ClusterVisualizer {
     const self = this; // Capture 'this' context
 
     return function(selection) {
+      console.log('CLUSTER setupNodeInteractions - attaching events to selection:', selection.size());
       selection.call(drag)
         .on('mouseover', (event, d) => {
+          console.log('CLUSTER mouseover event fired for:', d.title);
           // Highlight domain
           if (self.boundaryManager) {
             self.boundaryManager.highlightDomain(d.domain);
@@ -357,6 +560,10 @@ export class ClusterVisualizer {
             .attr('r', 12);
 
           // Show tooltip (if implemented)
+          self.showNodeTooltip(event, d);
+        })
+        .on('mousemove', (event, d) => {
+          // Update tooltip position as mouse moves (like tree view)
           self.showNodeTooltip(event, d);
         })
         .on('mouseout', (event, d) => {
@@ -374,23 +581,30 @@ export class ClusterVisualizer {
           // Hide tooltip
           self.hideNodeTooltip();
         })
-        .on('click', (event, _d) => {
+        .on('click', (event, d) => {
           // Handle node click (e.g., open URL)
+          console.log('CLUSTER click event fired for:', d.title, 'URL:', d.url);
+          event.stopPropagation();
           if (d.url) {
+            console.log('CLUSTER opening URL:', d.url);
             window.open(d.url, '_blank');
+          } else {
+            console.log('CLUSTER no URL to open');
           }
         });
     };
   }
 
   showNodeTooltip(event, d) {
-    // Placeholder for tooltip implementation
-    console.log('Show tooltip for:', d.title);
+    console.log('showNodeTooltip called for:', d.title);
+    // Use the same updateDetailsPanel method as tree view
+    this.updateDetailsPanel(d, event);
   }
 
   hideNodeTooltip() {
-    // Placeholder for tooltip implementation
-    console.log('Hide tooltip');
+    console.log('hideNodeTooltip called');
+    // Hide the details panel
+    this.updateDetailsPanel(null);
   }
 
   updateElementSizes(scale) {
@@ -443,6 +657,7 @@ export class ClusterVisualizer {
   }
 
   destroy() {
+    console.log('CLUSTER destroy called');
     // Stop simulation
     if (this.simulation) {
       this.simulation.stop();
@@ -453,9 +668,16 @@ export class ClusterVisualizer {
       this.svg.selectAll('*').interrupt();
     }
 
-    // Clear the container
+    // Clear container but preserve cluster controls
     if (this.container) {
+      // Save cluster controls before clearing
+      const clusterControls = this.container.querySelector('.cluster-controls');
       this.container.innerHTML = '';
+      // Restore cluster controls
+      if (clusterControls) {
+        console.log('CLUSTER restoring cluster controls');
+        this.container.appendChild(clusterControls);
+      }
     }
 
     // Clear references

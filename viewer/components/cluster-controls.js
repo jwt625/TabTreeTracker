@@ -11,7 +11,7 @@ export class ClusterControls {
       showClusterControls: true,
       showDomainFilters: true,
       showLayoutOptions: true,
-      position: 'top-left', // 'top-left', 'top-right', 'bottom-left', 'bottom-right'
+      position: 'bottom-left', // 'top-left', 'top-right', 'bottom-left', 'bottom-right'
       ...options
     };
 
@@ -339,8 +339,14 @@ export class ClusterControls {
   }
 
   setupEventListeners() {
-    // Listen for mode changes
+    // Listen for mode changes - PRESERVE existing callback chain
+    const originalOnModeChange = this.viewModeController.onModeChange;
     this.viewModeController.onModeChange = (mode) => {
+      // Call original callback first
+      if (originalOnModeChange) {
+        originalOnModeChange(mode);
+      }
+      // Then call our callback
       this.updateModeButtons();
       this.updateControlsVisibility(mode);
     };
